@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>دفع TON فعلي</title>
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+  <style>
+    body {
+      font-family: Tahoma, sans-serif;
+      background: #f4f9ff;
+      margin: 0;
+      padding: 40px 20px;
+      direction: rtl;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #007aff;
+    }
+
+    #payBtn {
+      margin-top: 20px;
+      padding: 12px 24px;
+      background-color: #007aff;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    #payBtn:disabled {
+      background: #b0cfff;
+      cursor: not-allowed;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 15px;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ادفع 0.01 TON الآن</h1>
+    <div id="ton-connect"></div>
+    <button id="payBtn" disabled>💸 الدفع الآن</button>
+    <p id="status">🔌 لم يتم الاتصال بعد</p>
+  </div>
+
+  <script>
+    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+      manifestUrl: 'https://ton-connect.github.io/demo-dapp-with-react/tonconnect-manifest.json',
+      buttonRootId: 'ton-connect'
+    });
+
+    let wallet = null;
+
+    tonConnectUI.onStatusChange(userWallet => {
+      wallet = userWallet;
+      document.getElementById('payBtn').disabled = !wallet;
+      document.getElementById('status').textContent = wallet
+        ? `✅ متصل بمحفظة: ${wallet.account.address.slice(0, 12)}...`
+        : '🔌 لم يتم الاتصال بعد';
+    });
+
+    document.getElementById('payBtn').addEventListener('click', async () => {
+      if (!wallet) return;
+
+      const tx = {
+        validUntil: Math.floor(Date.now() / 1000) + 600,
+        messages: [
+          {
+            address: 'UQCTZAMbXoN5T43K9gJXH8GYWBmIstXrUrdoV9kv3btN1Ad3',
+            amount: '10000000' // 0.01 TON
+          }
+        ]
+      };
+
+      try {
+        const result = await tonConnectUI.sendTransaction(tx);
+        document.getElementById('status').textContent = `✅ تم الدفع!`;
+      } catch (error) {
+        document.getElementById('status').textContent = `❌ فشل الدفع: ${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
