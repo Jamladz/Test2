@@ -3,17 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gift Winner (GW) Token Pre-Sale</title>
+  <title>GW Token Pre-Market Sale - Phase 1</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     :root {
-      --telegram-bg: #1e96c8;
-      --telegram-dark: #0088cc;
-      --telegram-light: #40b7e7;
-      --telegram-text: #ffffff;
-      --telegram-secondary: #a8c7e0;
-      --telegram-card: #182633;
-      --telegram-divider: #2d3e4f;
+      --primary: #0088cc;
+      --primary-dark: #0077b3;
+      --secondary: #17212b;
+      --background: #0e1621;
+      --card-bg: #1e2d3b;
+      --text: #ffffff;
+      --text-secondary: #a5b8c5;
+      --success: #2ecc71;
+      --warning: #f39c12;
+      --border: #2d3e4f;
+      --ton-orange: #0098ea;
+      --gw-purple: #8a2be2;
     }
     
     * {
@@ -26,8 +33,8 @@
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
     
     body {
-      background-color: var(--telegram-bg);
-      color: var(--telegram-text);
+      background-color: var(--background);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -39,16 +46,15 @@
       flex-direction: column;
       max-width: 100%;
       margin: 0 auto;
-      background: linear-gradient(135deg, var(--telegram-dark) 0%, var(--telegram-bg) 100%);
     }
     
     .header {
-      background-color: var(--telegram-dark);
+      background-color: var(--secondary);
       padding: 15px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -68,10 +74,8 @@
       border-radius: 50%;
     }
     
-    .telegram-link {
-      color: var(--telegram-text);
-      font-size: 24px;
-      text-decoration: none;
+    .wallet-connect {
+      width: 180px;
     }
     
     .main-content {
@@ -82,87 +86,104 @@
       align-items: center;
     }
     
-    .token-card {
-      background-color: var(--telegram-card);
+    .sale-card {
+      background-color: var(--card-bg);
       border-radius: 16px;
       padding: 25px;
       width: 100%;
-      max-width: 450px;
+      max-width: 500px;
       margin-bottom: 20px;
       box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
       text-align: center;
-      position: relative;
-      overflow: hidden;
+      border: 1px solid var(--border);
     }
     
-    .token-card::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-      z-index: 0;
+    .token-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
     }
     
     .token-image {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 15px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
-      border: 3px solid var(--telegram-light);
-      position: relative;
-      z-index: 1;
+      margin-right: 15px;
+      border: 2px solid var(--primary);
+    }
+    
+    .token-info {
+      text-align: left;
     }
     
     .token-name {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
       margin-bottom: 5px;
-      position: relative;
-      z-index: 1;
     }
     
     .token-symbol {
-      font-size: 18px;
-      color: var(--telegram-secondary);
-      margin-bottom: 20px;
-      position: relative;
-      z-index: 1;
+      font-size: 16px;
+      color: var(--text-secondary);
+      background-color: rgba(0, 136, 204, 0.2);
+      padding: 3px 10px;
+      border-radius: 20px;
+      display: inline-block;
     }
     
-    .token-network {
+    .network-badge {
       display: inline-flex;
       align-items: center;
-      background-color: rgba(0, 136, 204, 0.3);
+      background-color: rgba(0, 152, 234, 0.2);
       padding: 5px 12px;
       border-radius: 20px;
       font-size: 14px;
-      margin-bottom: 20px;
-      position: relative;
-      z-index: 1;
+      margin-top: 10px;
     }
     
-    .token-network img {
+    .network-badge img {
       width: 16px;
       height: 16px;
       margin-right: 5px;
     }
     
-    .token-stats {
+    .divider {
+      height: 1px;
+      background-color: var(--border);
+      margin: 20px 0;
+    }
+    
+    .phase-info {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .phase-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    
+    .phase-details {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 15px;
+    }
+    
+    .sale-stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 15px;
       margin: 20px 0;
-      position: relative;
-      z-index: 1;
     }
     
-    .stat-item {
+    .stat-card {
       background-color: rgba(0, 0, 0, 0.2);
-      padding: 12px;
+      padding: 15px;
       border-radius: 10px;
+      border: 1px solid var(--border);
     }
     
     .stat-value {
@@ -173,186 +194,535 @@
     
     .stat-label {
       font-size: 12px;
-      color: var(--telegram-secondary);
-    }
-    
-    .divider {
-      height: 1px;
-      background-color: var(--telegram-divider);
-      margin: 20px 0;
-      position: relative;
-      z-index: 1;
-    }
-    
-    .sale-info {
-      text-align: left;
-      margin-bottom: 20px;
-      position: relative;
-      z-index: 1;
-    }
-    
-    .sale-info p {
-      margin-bottom: 10px;
-      line-height: 1.5;
-    }
-    
-    .countdown {
-      margin: 25px 0;
-      position: relative;
-      z-index: 1;
-    }
-    
-    .countdown-title {
-      font-size: 16px;
-      margin-bottom: 10px;
-      color: var(--telegram-secondary);
-    }
-    
-    .sand-clock {
-      font-size: 40px;
-      color: var(--telegram-light);
-      animation: flip 2s infinite;
-      margin-bottom: 10px;
-    }
-    
-    @keyframes flip {
-      0%, 100% { transform: rotate(0deg); }
-      50% { transform: rotate(180deg); }
-    }
-    
-    .countdown-text {
-      font-size: 14px;
-      color: var(--telegram-secondary);
+      color: var(--text-secondary);
     }
     
     .progress-container {
       width: 100%;
-      margin: 20px 0;
-      position: relative;
-      z-index: 1;
+      margin: 25px 0;
     }
     
     .progress-labels {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
       font-size: 12px;
     }
     
     .progress-bar {
-      height: 8px;
-      background-color: rgba(0, 0, 0, 0.2);
-      border-radius: 4px;
+      height: 10px;
+      background-color: rgba(0, 0, 0, 0.3);
+      border-radius: 5px;
       overflow: hidden;
     }
     
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--telegram-light), var(--telegram-dark));
-      border-radius: 4px;
-      width: 30%;
+      background: linear-gradient(90deg, var(--primary), var(--ton-orange));
+      border-radius: 5px;
+      width: 0%;
       transition: width 0.5s ease;
     }
     
-    .sale-stages {
+    .buy-section {
       width: 100%;
-      margin: 20px 0;
-      position: relative;
-      z-index: 1;
+      margin-top: 20px;
     }
     
-    .stage {
+    .buy-form {
       display: flex;
-      align-items: center;
+      flex-direction: column;
+    }
+    
+    .input-group {
+      margin-bottom: 15px;
+    }
+    
+    .input-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-align: left;
+    }
+    
+    .input-field {
+      width: 100%;
+      padding: 12px 15px;
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 16px;
+    }
+    
+    .input-field:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .price-info {
+      font-size: 14px;
+      margin: 10px 0;
+      color: var(--text-secondary);
+    }
+    
+    .highlight {
+      color: var(--primary);
+      font-weight: 500;
+    }
+    
+    .buy-button {
+      background: linear-gradient(135deg, var(--primary), var(--ton-orange));
+      color: white;
+      border: none;
+      border-radius: 8px;
       padding: 15px;
-      background-color: rgba(0, 0, 0, 0.1);
-      border-radius: 10px;
-      margin-bottom: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 15px;
       transition: all 0.3s;
     }
     
-    .stage:hover {
-      background-color: rgba(0, 0, 0, 0.2);
+    .buy-button:hover {
       transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 136, 204, 0.4);
     }
     
-    .stage-number {
-      width: 30px;
-      height: 30px;
-      background-color: var(--telegram-dark);
-      border-radius: 50%;
+    .buy-button:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .telegram-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-decoration: none;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    
+    .telegram-link i {
+      margin-right: 8px;
+      font-size: 18px;
+    }
+    
+    .status-message {
+      margin-top: 15px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .success {
+      background-color: rgba(46, 204, 113, 0.2);
+      color: var(--success);
+      display: block;
+    }
+    
+    .error {
+      background-color: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+      display: block;
+    }
+    
+    .wallet-status {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: rgba(0, 136, 204, 0.2);
+      border-radius: 8px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .wallet-status i {
+      margin-right: 8px;
+    }
+    
+    .connected {
+      color: var(--success);
+    }
+    
+    .disconnected {
+      color: var(--warning);
+    }
+    
+    .user-info {
+      margin-top: 15px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    
+    /* New styles for GW wallet */
+    .wallet-section {
+      background-color: rgba(138, 43, 226, 0.1);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 15px;
+      margin: 20px 0;
+      display: none;
+    }
+    
+    .wallet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .wallet-title {
+      display: flex;
+      align-items: center;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .wallet-title img {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+    }
+    
+    .wallet-balance {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 10px 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 15px;
-      font-weight: 700;
     }
     
-    .stage-info {
+    .wallet-balance img {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+    }
+    
+    .withdraw-button {
+      background: linear-gradient(135deg, var(--gw-purple), #6a0dad);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.3s;
+    }
+    
+    .withdraw-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
+    }
+    
+    .withdraw-button:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-content {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      padding: 25px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+    
+    .modal-message {
+      margin-bottom: 20px;
+      font-size: 15px;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+    
+    .modal-button {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+    }
+    
+    .modal-confirm {
+      background-color: var(--success);
+      color: white;
+    }
+    
+    .modal-cancel {
+      background-color: var(--border);
+      color: var(--text);
+    }
+    
+    /* Airdrop section */
+    .airdrop-section {
+      background-color: rgba(0, 136, 204, 0.1);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    
+    .airdrop-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .airdrop-title i {
+      margin-right: 8px;
+      color: var(--primary);
+    }
+    
+    .airdrop-button {
+      background: linear-gradient(135deg, var(--primary), var(--ton-orange));
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      transition: all 0.3s;
+    }
+    
+    .airdrop-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 136, 204, 0.4);
+    }
+    
+    /* Exchange icons section */
+    .exchange-section {
+      background-color: rgba(0, 136, 204, 0.1);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    
+    .exchange-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .exchange-title i {
+      margin-right: 8px;
+      color: var(--primary);
+    }
+    
+    .exchange-icons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 15px;
+    }
+    
+    .exchange-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      background-color: var(--card-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      transition: transform 0.3s;
+    }
+    
+    .exchange-icon img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    
+    .exchange-icon:hover {
+      transform: scale(1.1);
+    }
+    
+    .exchange-phase {
+      font-size: 14px;
+      margin-top: 10px;
+      color: var(--text-secondary);
+    }
+    
+    .phase-highlight {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    /* Referral section */
+    .referral-section {
+      background-color: rgba(0, 136, 204, 0.1);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    
+    .referral-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .referral-title i {
+      margin-right: 8px;
+      color: var(--primary);
+    }
+    
+    .referral-link-container {
+      background-color: var(--secondary);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 15px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .referral-link {
+      font-size: 14px;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       flex: 1;
       text-align: left;
     }
     
-    .stage-title {
-      font-weight: 500;
-      margin-bottom: 3px;
-    }
-    
-    .stage-details {
-      font-size: 12px;
-      color: var(--telegram-secondary);
-    }
-    
-    .coming-soon {
-      font-size: 18px;
-      font-weight: 500;
-      margin: 30px 0;
-      color: var(--telegram-light);
-      text-align: center;
-      position: relative;
-      z-index: 1;
-    }
-    
-    .telegram-channel {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: var(--telegram-dark);
-      padding: 12px 20px;
-      border-radius: 10px;
-      text-decoration: none;
+    .copy-button {
+      background-color: var(--primary);
       color: white;
-      margin-top: 20px;
-      transition: all 0.3s;
-      position: relative;
-      z-index: 1;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-left: 10px;
     }
     
-    .telegram-channel:hover {
-      background-color: var(--telegram-light);
-      transform: translateY(-2px);
+    .copy-button:hover {
+      background-color: var(--primary-dark);
     }
     
-    .telegram-channel i {
-      font-size: 20px;
-      margin-right: 10px;
+    .referral-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
     }
     
-    .footer {
-      text-align: center;
-      padding: 15px;
+    .referral-stat {
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    
+    .referral-stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    
+    .referral-stat-label {
       font-size: 12px;
-      color: var(--telegram-secondary);
-      background-color: var(--telegram-dark);
+      color: var(--text-secondary);
     }
     
     @media (max-width: 480px) {
-      .token-stats {
+      .sale-stats {
         grid-template-columns: 1fr;
       }
       
-      .token-card {
-        padding: 20px;
+      .token-header {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .token-image {
+        margin-right: 0;
+        margin-bottom: 10px;
+      }
+      
+      .token-info {
+        text-align: center;
+      }
+      
+      .modal-buttons {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .modal-button {
+        width: 100%;
+      }
+      
+      .exchange-icons {
+        gap: 10px;
+      }
+      
+      .exchange-icon {
+        width: 50px;
+        height: 50px;
+      }
+      
+      .referral-stats {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -362,103 +732,537 @@
     <div class="header">
       <div class="logo">
         <img src="https://i.suar.me/NzAB4/l" alt="GW Token">
-        <span>Gift Winner</span>
+        <span>GW Pre-Sale</span>
       </div>
-      <a href="https://t.me/giftwiner" class="telegram-link" target="_blank">
-        <i class="fab fa-telegram"></i>
-      </a>
+      <div id="ton-connect" class="wallet-connect"></div>
     </div>
     
     <div class="main-content">
-      <div class="token-card">
-        <img src="https://i.suar.me/NzAB4/l" alt="GW Token" class="token-image">
-        <h1 class="token-name">Gift Winner</h1>
-        <div class="token-symbol">GW</div>
-        <div class="token-network">
-          <img src="https://ton.org/download/ton_symbol.png" alt="TON">
-          <span>TON Network</span>
+      <div class="sale-card">
+        <div class="token-header">
+          <img src="https://i.suar.me/NzAB4/l" alt="GW Token" class="token-image">
+          <div class="token-info">
+            <div class="token-name">Gift Winner</div>
+            <div class="token-symbol">GW</div>
+            <div class="network-badge">
+              <img src="https://ton.org/download/ton_symbol.png" alt="TON">
+              <span>TON Network</span>
+            </div>
+          </div>
         </div>
         
         <div class="divider"></div>
         
-        <div class="sale-info">
-          <p>Pre-market sale of GW token on TON network. 30% of total supply (30M GW) will be sold in three stages.</p>
-          <p>Stay tuned for updates and participate in the early sale!</p>
+        <div class="user-info" id="user-info" style="display: none;">
+          Hello, <span id="username">User</span>! Connect your wallet to participate.
         </div>
         
-        <div class="countdown">
-          <div class="sand-clock">⏳</div>
-          <div class="countdown-title">Pre-Sale Starting Soon</div>
-          <div class="countdown-text">Follow our Telegram for updates</div>
+        <div class="phase-info">
+          <div class="phase-title">PHASE 1 - PRE-MARKET SALE</div>
+          <div class="phase-details">
+            1 TON buys 20 GW tokens<br>
+            Minimum purchase: 1 TON
+          </div>
+        </div>
+        
+        <div class="sale-stats">
+          <div class="stat-card">
+            <div class="stat-value">10M</div>
+            <div class="stat-label">Total Phase Supply</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="sold-amount">6.79M</div>
+            <div class="stat-label">GW Tokens Sold</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">100M</div>
+            <div class="stat-label">Total GW Supply</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">67.9%</div>
+            <div class="stat-label">Sold in Phase 1</div>
+          </div>
         </div>
         
         <div class="progress-container">
           <div class="progress-labels">
             <span>0 GW Sold</span>
-            <span>30M GW</span>
+            <span>10M GW</span>
           </div>
           <div class="progress-bar">
-            <div class="progress-fill"></div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="coming-soon">Pre-Sale Coming Soon</div>
-      
-      <div class="sale-stages">
-        <div class="stage">
-          <div class="stage-number">1</div>
-          <div class="stage-info">
-            <div class="stage-title">First Stage</div>
-            <div class="stage-details">10M GW tokens at $0.10 each</div>
+            <div class="progress-fill" id="progress-fill" style="width: 67.9%"></div>
           </div>
         </div>
         
-        <div class="stage">
-          <div class="stage-number">2</div>
-          <div class="stage-info">
-            <div class="stage-title">Second Stage</div>
-            <div class="stage-details">10M GW tokens at $0.15 each</div>
+        <div class="wallet-status" id="wallet-status">
+          <i class="fas fa-wallet disconnected"></i>
+          <span>Wallet not connected</span>
+        </div>
+        
+        <div class="buy-section">
+          <form class="buy-form" id="buy-form">
+            <div class="input-group">
+              <label class="input-label">Amount to invest (TON)</label>
+              <input type="number" class="input-field" id="ton-amount" min="1" step="1" placeholder="Enter TON amount">
+            </div>
+            
+            <div class="price-info">
+              You will receive: <span class="highlight" id="gw-amount">0</span> GW tokens
+            </div>
+            
+            <button type="button" class="buy-button" id="buy-button" disabled>
+              BUY GW TOKENS
+            </button>
+          </form>
+        </div>
+        
+        <!-- GW Wallet Section -->
+        <div class="wallet-section" id="wallet-section">
+          <div class="wallet-header">
+            <div class="wallet-title">
+              <img src="https://i.suar.me/NzAB4/l" alt="GW">
+              <span>Your GW Wallet</span>
+            </div>
+          </div>
+          <div class="wallet-balance">
+            <img src="https://i.suar.me/NzAB4/l" alt="GW">
+            <span id="user-gw-balance">0</span> GW
+          </div>
+          <button class="withdraw-button" id="withdraw-button" disabled>
+            WITHDRAW GW TOKENS
+          </button>
+        </div>
+        
+        <!-- Referral Section -->
+        <div class="referral-section">
+          <div class="referral-title">
+            <i class="fas fa-user-plus"></i>
+            Your Referral Link
+          </div>
+          <p>Share your referral link and earn 10% commission on every purchase!</p>
+          
+          <div class="referral-link-container">
+            <div class="referral-link" id="referral-link">Loading...</div>
+            <button class="copy-button" id="copy-button">
+              <i class="fas fa-copy"></i>
+            </button>
+          </div>
+          
+          <div class="referral-stats">
+            <div class="referral-stat">
+              <div class="referral-stat-value" id="referral-count">0</div>
+              <div class="referral-stat-label">Referrals</div>
+            </div>
+            <div class="referral-stat">
+              <div class="referral-stat-value" id="referral-earnings">0</div>
+              <div class="referral-stat-label">GW Earnings</div>
+            </div>
           </div>
         </div>
         
-        <div class="stage">
-          <div class="stage-number">3</div>
-          <div class="stage-info">
-            <div class="stage-title">Final Stage</div>
-            <div class="stage-details">10M GW tokens at $0.20 each</div>
+        <!-- Exchange Listing Section -->
+        <div class="exchange-section">
+          <div class="exchange-title">
+            <i class="fas fa-exchange-alt"></i>
+            GW Token Exchange Listings
+          </div>
+          <p>GW token will be listed in multiple phases:</p>
+          
+          <div class="exchange-phase">
+            <span class="phase-highlight">Phase 2:</span> Listing on decentralized exchanges (DEX)
+          </div>
+          
+          <div class="exchange-phase">
+            <span class="phase-highlight">Phase 3:</span> Listing on top-tier centralized exchanges
+          </div>
+          
+          <div class="exchange-icons">
+            <div class="exchange-icon">
+              <img src="https://cryptologos.cc/logos/binance-coin-bnb-logo.png" alt="Binance">
+            </div>
+            <div class="exchange-icon">
+              <img src="https://cryptologos.cc/logos/okx-okx-logo.png" alt="OKX">
+            </div>
+            <div class="exchange-icon">
+              <img src="https://cryptologos.cc/logos/bybit-exchange-bybit-logo.png" alt="Bybit">
+            </div>
+            <div class="exchange-icon">
+              <img src="https://cryptologos.cc/logos/bitget-token-bgb-logo.png" alt="Bitget">
+            </div>
           </div>
         </div>
+        
+        <!-- Airdrop Section -->
+        <div class="airdrop-section">
+          <div class="airdrop-title">
+            <i class="fas fa-parachute-box"></i>
+            GW Token Airdrop
+          </div>
+          <p>Participate in our airdrop program to earn free GW tokens!</p>
+          <a href="https://t.me/GiftwinerBot" class="airdrop-button" target="_blank">
+            JOIN AIRDROP
+          </a>
+        </div>
+        
+        <div class="status-message" id="status-message"></div>
+        
+        <a href="https://t.me/giftwiner" class="telegram-link" target="_blank">
+          <i class="fab fa-telegram"></i>
+          Join our Telegram for updates
+        </a>
       </div>
-      
-      <div class="token-stats">
-        <div class="stat-item">
-          <div class="stat-value">100M</div>
-          <div class="stat-label">Total Supply</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">30%</div>
-          <div class="stat-label">Pre-Sale Allocation</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">TON</div>
-          <div class="stat-label">Network</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">3</div>
-          <div class="stat-label">Sale Stages</div>
-        </div>
-      </div>
-      
-      <a href="https://t.me/giftwiner" class="telegram-channel" target="_blank">
-        <i class="fab fa-telegram"></i>
-        <span>Join Our Telegram Channel</span>
-      </a>
-    </div>
-    
-    <div class="footer">
-      © 2025 Gift Winner (GW) Token. All rights reserved.
     </div>
   </div>
+
+  <!-- Withdrawal Confirmation Modal -->
+  <div class="modal" id="withdraw-modal">
+    <div class="modal-content">
+      <div class="modal-title">Confirm Withdrawal</div>
+      <div class="modal-message" id="withdraw-message">
+        Withdrawal of GW tokens will be available after Phase 1 ends. Your tokens are safe until then.
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-button modal-cancel" id="cancel-withdraw">OK, Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // App State
+    const appState = {
+      walletConnected: false,
+      walletAddress: null,
+      tgUser: null,
+      tgUsername: null,
+      gwSold: 6790000, // 6.79M GW sold
+      userGWBalance: 0,
+      referralEarnings: 0,
+      referralCount: 0,
+      gwPrice: 0.05, // 1 TON = 20 GW (0.05 TON per GW)
+      googleSheetURL: 'https://script.google.com/macros/s/YOUR_GOOGLE_SCRIPT_ID/exec', // Replace with your Google Apps Script URL
+      tonWalletAddress: 'UQCTZAMbXoN5T43K9gJXH8GYWBmIstXrUrdoV9kv3btN1Ad3', // Your TON wallet address
+      sheetName: 'Giftwinner' // Name of the Google Sheet
+    };
+    
+    // Initialize TonConnect
+    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+      manifestUrl: 'https://jamladz.github.io/oumniacool/tonconnect-manifest.json',
+      buttonRootId: 'ton-connect',
+      buttonTheme: {
+        backgroundColor: 'var(--primary)',
+        iconColor: 'white',
+        textColor: 'white',
+        modalBackground: 'var(--secondary)',
+        modalTextColor: 'white',
+        modalHoverBackground: 'rgba(0, 136, 204, 0.1)'
+      }
+    });
+    
+    // DOM Elements
+    const walletSection = document.getElementById('wallet-section');
+    const userGWBalanceElement = document.getElementById('user-gw-balance');
+    const withdrawButton = document.getElementById('withdraw-button');
+    const withdrawModal = document.getElementById('withdraw-modal');
+    const cancelWithdrawBtn = document.getElementById('cancel-withdraw');
+    const referralLinkElement = document.getElementById('referral-link');
+    const copyButton = document.getElementById('copy-button');
+    const referralCountElement = document.getElementById('referral-count');
+    const referralEarningsElement = document.getElementById('referral-earnings');
+    
+    // Get Telegram user data if running in Telegram WebApp
+    function getTelegramUser() {
+      try {
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+          tg.expand();
+          appState.tgUser = tg.initDataUnsafe?.user;
+          
+          if (appState.tgUser) {
+            const username = appState.tgUser.username || `${appState.tgUser.first_name || ''} ${appState.tgUser.last_name || ''}`.trim();
+            document.getElementById('username').textContent = username || 'User';
+            document.getElementById('user-info').style.display = 'block';
+            
+            // Store username for referral link
+            appState.tgUsername = username || 'user' + appState.tgUser.id;
+            
+            // Generate referral link
+            generateReferralLink();
+          }
+        }
+      } catch (e) {
+        console.log('Not running in Telegram WebApp');
+      }
+    }
+    
+    // Generate referral link
+    function generateReferralLink() {
+      if (appState.tgUsername) {
+        const referralLink = `https://t.me/PremarketGift_bot?start=ref_${appState.tgUsername}`;
+        referralLinkElement.textContent = referralLink;
+      }
+    }
+    
+    // Update wallet status
+    function updateWalletStatus(wallet) {
+      const walletStatus = document.getElementById('wallet-status');
+      const buyButton = document.getElementById('buy-button');
+      
+      if (wallet) {
+        appState.walletConnected = true;
+        appState.walletAddress = wallet.account.address;
+        
+        const shortAddress = wallet.account.address.slice(0, 6) + '...' + wallet.account.address.slice(-4);
+        walletStatus.innerHTML = `<i class="fas fa-wallet connected"></i><span>Connected: ${shortAddress}</span>`;
+        walletStatus.classList.add('connected');
+        walletStatus.classList.remove('disconnected');
+        
+        buyButton.disabled = false;
+        
+        // Show wallet section if user has balance
+        if (appState.userGWBalance > 0) {
+          walletSection.style.display = 'block';
+        }
+        
+        // Enable withdraw button if user has balance
+        if (appState.userGWBalance > 0) {
+          withdrawButton.disabled = false;
+        }
+        
+        // Load user's GW balance from localStorage
+        loadUserBalance();
+      } else {
+        appState.walletConnected = false;
+        appState.walletAddress = null;
+        
+        walletStatus.innerHTML = '<i class="fas fa-wallet disconnected"></i><span>Wallet not connected</span>';
+        walletStatus.classList.add('disconnected');
+        walletStatus.classList.remove('connected');
+        
+        buyButton.disabled = true;
+        withdrawButton.disabled = true;
+      }
+    }
+    
+    // Calculate GW amount based on TON input
+    function calculateGW() {
+      const tonAmountInput = document.getElementById('ton-amount');
+      let tonAmount = parseFloat(tonAmountInput.value) || 0;
+      
+      // Enforce minimum limit
+      if (tonAmount < 1) {
+        tonAmount = 1;
+        tonAmountInput.value = 1;
+      }
+      
+      const gwAmount = Math.floor(tonAmount / appState.gwPrice);
+      document.getElementById('gw-amount').textContent = gwAmount.toLocaleString();
+      
+      const buyButton = document.getElementById('buy-button');
+      buyButton.disabled = !(appState.walletConnected && tonAmount >= 1);
+    }
+    
+    // Save user balance to localStorage
+    function saveUserBalance() {
+      if (appState.walletAddress) {
+        localStorage.setItem(`gwBalance_${appState.walletAddress}`, appState.userGWBalance.toString());
+        localStorage.setItem(`referralCount_${appState.walletAddress}`, appState.referralCount.toString());
+        localStorage.setItem(`referralEarnings_${appState.walletAddress}`, appState.referralEarnings.toString());
+      }
+    }
+    
+    // Load user balance from localStorage
+    function loadUserBalance() {
+      if (appState.walletAddress) {
+        const savedBalance = localStorage.getItem(`gwBalance_${appState.walletAddress}`);
+        if (savedBalance) {
+          appState.userGWBalance = parseInt(savedBalance) || 0;
+          updateGWBalanceUI();
+        }
+        
+        const savedRefCount = localStorage.getItem(`referralCount_${appState.walletAddress}`);
+        if (savedRefCount) {
+          appState.referralCount = parseInt(savedRefCount) || 0;
+          referralCountElement.textContent = appState.referralCount;
+        }
+        
+        const savedRefEarnings = localStorage.getItem(`referralEarnings_${appState.walletAddress}`);
+        if (savedRefEarnings) {
+          appState.referralEarnings = parseInt(savedRefEarnings) || 0;
+          referralEarningsElement.textContent = appState.referralEarnings.toLocaleString();
+        }
+      }
+    }
+    
+    // Update GW balance UI
+    function updateGWBalanceUI() {
+      userGWBalanceElement.textContent = appState.userGWBalance.toLocaleString();
+      
+      if (appState.userGWBalance > 0) {
+        walletSection.style.display = 'block';
+        withdrawButton.disabled = !appState.walletConnected;
+      } else {
+        walletSection.style.display = 'none';
+      }
+    }
+    
+    // Send data to Google Sheet
+    async function sendToGoogleSheet(data) {
+      try {
+        // Add sheet name to data
+        data.sheetName = appState.sheetName;
+        
+        const response = await fetch(appState.googleSheetURL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        
+        return true;
+      } catch (error) {
+        console.error('Error sending to Google Sheet:', error);
+        return false;
+      }
+    }
+    
+    // Process purchase
+    async function processPurchase() {
+      const tonAmount = parseFloat(document.getElementById('ton-amount').value);
+      const gwAmount = Math.floor(tonAmount / appState.gwPrice);
+      const statusMessage = document.getElementById('status-message');
+      
+      if (!appState.walletConnected) {
+        statusMessage.textContent = 'Please connect your wallet first';
+        statusMessage.className = 'status-message error';
+        return;
+      }
+      
+      if (tonAmount < 1) {
+        statusMessage.textContent = 'Minimum purchase is 1 TON';
+        statusMessage.className = 'status-message error';
+        return;
+      }
+      
+      try {
+        // Send transaction
+        const tx = {
+          validUntil: Math.floor(Date.now() / 1000) + 600, // 10 minutes
+          messages: [
+            {
+              address: appState.tonWalletAddress,
+              amount: (tonAmount * 1000000000).toString(), // Convert TON to nanoTON
+            }
+          ]
+        };
+        
+        const result = await tonConnectUI.sendTransaction(tx);
+        
+        // If transaction succeeds
+        if (result) {
+          // Update sold amount and user balance
+          appState.gwSold += gwAmount;
+          appState.userGWBalance += gwAmount;
+          
+          document.getElementById('sold-amount').textContent = (appState.gwSold / 1000000).toFixed(2) + 'M';
+          const progressPercent = Math.min(100, (appState.gwSold / 10000000) * 100);
+          document.getElementById('progress-fill').style.width = `${progressPercent}%`;
+          
+          // Update user balance UI
+          updateGWBalanceUI();
+          saveUserBalance();
+          
+          // Send purchase data to Google Sheet
+          const purchaseData = {
+            type: 'purchase',
+            username: appState.tgUser?.username || 'Unknown',
+            walletAddress: appState.walletAddress,
+            tonAmount: tonAmount,
+            gwAmount: gwAmount,
+            date: new Date().toISOString()
+          };
+          
+          const sheetSuccess = await sendToGoogleSheet(purchaseData);
+          
+          if (sheetSuccess) {
+            statusMessage.textContent = `Success! You purchased ${gwAmount.toLocaleString()} GW tokens`;
+            statusMessage.className = 'status-message success';
+          } else {
+            statusMessage.textContent = `Purchase successful but data not saved. Contact support with TX: ${result.boc.slice(0, 10)}...`;
+            statusMessage.className = 'status-message error';
+          }
+          
+          // Reset form
+          document.getElementById('ton-amount').value = '';
+          calculateGW();
+        }
+      } catch (error) {
+        console.error('Transaction failed:', error);
+        statusMessage.textContent = 'Transaction failed: ' + error.message;
+        statusMessage.className = 'status-message error';
+      }
+    }
+    
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', () => {
+      // Get Telegram user data
+      getTelegramUser();
+      
+      // Set up wallet connection listener
+      tonConnectUI.onStatusChange((wallet) => {
+        updateWalletStatus(wallet);
+      });
+      
+      // Set up TON amount input listener
+      document.getElementById('ton-amount').addEventListener('input', calculateGW);
+      
+      // Set up buy button listener
+      document.getElementById('buy-button').addEventListener('click', processPurchase);
+      
+      // Set up withdraw button listener
+      withdrawButton.addEventListener('click', () => {
+        withdrawModal.style.display = 'flex';
+      });
+      
+      // Set up modal button listeners
+      cancelWithdrawBtn.addEventListener('click', () => {
+        withdrawModal.style.display = 'none';
+      });
+      
+      // Close modal when clicking outside
+      withdrawModal.addEventListener('click', (e) => {
+        if (e.target === withdrawModal) {
+          withdrawModal.style.display = 'none';
+        }
+      });
+      
+      // Set up copy referral link button
+      copyButton.addEventListener('click', () => {
+        const link = referralLinkElement.textContent;
+        if (link && link !== 'Loading...') {
+          navigator.clipboard.writeText(link)
+            .then(() => {
+              const statusMessage = document.getElementById('status-message');
+              statusMessage.textContent = 'Referral link copied to clipboard!';
+              statusMessage.className = 'status-message success';
+              setTimeout(() => {
+                statusMessage.style.display = 'none';
+              }, 3000);
+            })
+            .catch(err => {
+              console.error('Failed to copy: ', err);
+            });
+        }
+      });
+      
+      // Initialize GW calculation
+      calculateGW();
+      
+      // Update referral stats
+      referralCountElement.textContent = appState.referralCount;
+      referralEarningsElement.textContent = appState.referralEarnings.toLocaleString();
+    });
+  </script>
 </body>
 </html>
