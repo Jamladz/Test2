@@ -368,7 +368,6 @@
       border-radius: 12px;
       padding: 15px;
       margin: 20px 0;
-      display: none;
     }
     
     .wallet-header {
@@ -724,6 +723,10 @@
       .referral-stats {
         grid-template-columns: 1fr;
       }
+      
+      .header {
+        padding: 10px 15px;
+      }
     }
   </style>
 </head>
@@ -734,7 +737,9 @@
         <img src="https://i.suar.me/NzAB4/l" alt="GW Token">
         <span>GW Pre-Sale</span>
       </div>
-      <div id="ton-connect" class="wallet-connect"></div>
+      <div class="wallet-controls">
+        <div id="ton-connect" class="wallet-connect"></div>
+      </div>
     </div>
     
     <div class="main-content">
@@ -786,7 +791,7 @@
         
         <div class="progress-container">
           <div class="progress-labels">
-            <span>0 GW Sold</span>
+            <span>6.79M GW Sold</span>
             <span>10M GW</span>
           </div>
           <div class="progress-bar">
@@ -919,7 +924,7 @@
     <div class="modal-content">
       <div class="modal-title">Confirm Withdrawal</div>
       <div class="modal-message" id="withdraw-message">
-        Withdrawal of GW tokens will be available after Phase 1 ends. Your tokens are safe until then.
+        Withdrawal will be available after Phase 1 ends.
       </div>
       <div class="modal-buttons">
         <button class="modal-button modal-cancel" id="cancel-withdraw">OK, Got it</button>
@@ -968,6 +973,18 @@
     const copyButton = document.getElementById('copy-button');
     const referralCountElement = document.getElementById('referral-count');
     const referralEarningsElement = document.getElementById('referral-earnings');
+    
+    // Update GW balance UI
+    function updateGWBalanceUI() {
+      userGWBalanceElement.textContent = appState.userGWBalance.toLocaleString();
+      
+      if (appState.userGWBalance > 0) {
+        walletSection.style.display = 'block';
+        withdrawButton.disabled = !appState.walletConnected;
+      } else {
+        walletSection.style.display = 'none';
+      }
+    }
     
     // Get Telegram user data if running in Telegram WebApp
     function getTelegramUser() {
@@ -1090,18 +1107,6 @@
           appState.referralEarnings = parseInt(savedRefEarnings) || 0;
           referralEarningsElement.textContent = appState.referralEarnings.toLocaleString();
         }
-      }
-    }
-    
-    // Update GW balance UI
-    function updateGWBalanceUI() {
-      userGWBalanceElement.textContent = appState.userGWBalance.toLocaleString();
-      
-      if (appState.userGWBalance > 0) {
-        walletSection.style.display = 'block';
-        withdrawButton.disabled = !appState.walletConnected;
-      } else {
-        walletSection.style.display = 'none';
       }
     }
     
