@@ -1,1273 +1,1025 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GW Token Pre-Market Sale - Phase 1</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
-    :root {
-      --primary: #0088cc;
-      --primary-dark: #0077b3;
-      --secondary: #17212b;
-      --background: #0e1621;
-      --card-bg: #1e2d3b;
-      --text: #ffffff;
-      --text-secondary: #a5b8c5;
-      --success: #2ecc71;
-      --warning: #f39c12;
-      --border: #2d3e4f;
-      --ton-orange: #0098ea;
-      --gw-purple: #8a2be2;
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, sans-serif;
-    }
-    
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-    
-    body {
-      background-color: var(--background);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .app-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      max-width: 100%;
-      margin: 0 auto;
-    }
-    
-    .header {
-      background-color: var(--secondary);
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    
-    .logo {
-      display: flex;
-      align-items: center;
-      font-weight: 700;
-      font-size: 20px;
-    }
-    
-    .logo img {
-      width: 30px;
-      height: 30px;
-      margin-right: 10px;
-      border-radius: 50%;
-    }
-    
-    .wallet-connect {
-      width: 180px;
-    }
-    
-    .main-content {
-      flex: 1;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    
-    .sale-card {
-      background-color: var(--card-bg);
-      border-radius: 16px;
-      padding: 25px;
-      width: 100%;
-      max-width: 500px;
-      margin-bottom: 20px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-      text-align: center;
-      border: 1px solid var(--border);
-    }
-    
-    .token-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-    
-    .token-image {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      margin-right: 15px;
-      border: 2px solid var(--primary);
-    }
-    
-    .token-info {
-      text-align: left;
-    }
-    
-    .token-name {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 5px;
-    }
-    
-    .token-symbol {
-      font-size: 16px;
-      color: var(--text-secondary);
-      background-color: rgba(0, 136, 204, 0.2);
-      padding: 3px 10px;
-      border-radius: 20px;
-      display: inline-block;
-    }
-    
-    .network-badge {
-      display: inline-flex;
-      align-items: center;
-      background-color: rgba(0, 152, 234, 0.2);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 14px;
-      margin-top: 10px;
-    }
-    
-    .network-badge img {
-      width: 16px;
-      height: 16px;
-      margin-right: 5px;
-    }
-    
-    .divider {
-      height: 1px;
-      background-color: var(--border);
-      margin: 20px 0;
-    }
-    
-    .phase-info {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    
-    .phase-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 10px;
-    }
-    
-    .phase-details {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-bottom: 15px;
-    }
-    
-    .sale-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin: 20px 0;
-    }
-    
-    .stat-card {
-      background-color: rgba(0, 0, 0, 0.2);
-      padding: 15px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-    }
-    
-    .stat-value {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 5px;
-    }
-    
-    .stat-label {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-    
-    .progress-container {
-      width: 100%;
-      margin: 25px 0;
-    }
-    
-    .progress-labels {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-size: 12px;
-    }
-    
-    .progress-bar {
-      height: 10px;
-      background-color: rgba(0, 0, 0, 0.3);
-      border-radius: 5px;
-      overflow: hidden;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--primary), var(--ton-orange));
-      border-radius: 5px;
-      width: 0%;
-      transition: width 0.5s ease;
-    }
-    
-    .buy-section {
-      width: 100%;
-      margin-top: 20px;
-    }
-    
-    .buy-form {
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .input-group {
-      margin-bottom: 15px;
-    }
-    
-    .input-label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      color: var(--text-secondary);
-      text-align: left;
-    }
-    
-    .input-field {
-      width: 100%;
-      padding: 12px 15px;
-      background-color: rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 16px;
-    }
-    
-    .input-field:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-    
-    .price-info {
-      font-size: 14px;
-      margin: 10px 0;
-      color: var(--text-secondary);
-    }
-    
-    .highlight {
-      color: var(--primary);
-      font-weight: 500;
-    }
-    
-    .buy-button {
-      background: linear-gradient(135deg, var(--primary), var(--ton-orange));
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 15px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 15px;
-      transition: all 0.3s;
-    }
-    
-    .buy-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 136, 204, 0.4);
-    }
-    
-    .buy-button:disabled {
-      background: var(--border);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-    
-    .telegram-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      text-decoration: none;
-      margin-top: 20px;
-      font-size: 14px;
-    }
-    
-    .telegram-link i {
-      margin-right: 8px;
-      font-size: 18px;
-    }
-    
-    .status-message {
-      margin-top: 15px;
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-size: 14px;
-      display: none;
-    }
-    
-    .success {
-      background-color: rgba(46, 204, 113, 0.2);
-      color: var(--success);
-      display: block;
-    }
-    
-    .error {
-      background-color: rgba(231, 76, 60, 0.2);
-      color: #e74c3c;
-      display: block;
-    }
-    
-    .wallet-status {
-      margin-top: 15px;
-      padding: 10px 15px;
-      background-color: rgba(0, 136, 204, 0.2);
-      border-radius: 8px;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-    }
-    
-    .wallet-status i {
-      margin-right: 8px;
-    }
-    
-    .connected {
-      color: var(--success);
-    }
-    
-    .disconnected {
-      color: var(--warning);
-    }
-    
-    .user-info {
-      margin-top: 15px;
-      font-size: 14px;
-      color: var(--text-secondary);
-      text-align: center;
-    }
-    
-    /* New styles for GW wallet */
-    .wallet-section {
-      background-color: rgba(138, 43, 226, 0.1);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 15px;
-      margin: 20px 0;
-    }
-    
-    .wallet-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    
-    .wallet-title {
-      display: flex;
-      align-items: center;
-      font-size: 16px;
-      font-weight: 600;
-    }
-    
-    .wallet-title img {
-      width: 20px;
-      height: 20px;
-      margin-right: 8px;
-    }
-    
-    .wallet-balance {
-      font-size: 24px;
-      font-weight: 700;
-      margin: 10px 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .wallet-balance img {
-      width: 24px;
-      height: 24px;
-      margin-right: 8px;
-    }
-    
-    .withdraw-button {
-      background: linear-gradient(135deg, var(--gw-purple), #6a0dad);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      transition: all 0.3s;
-    }
-    
-    .withdraw-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
-    }
-    
-    .withdraw-button:disabled {
-      background: var(--border);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-    
-    /* Modal styles */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.8);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    .modal-content {
-      background-color: var(--card-bg);
-      border-radius: 16px;
-      padding: 25px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
-      text-align: center;
-    }
-    
-    .modal-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 15px;
-    }
-    
-    .modal-message {
-      margin-bottom: 20px;
-      font-size: 15px;
-    }
-    
-    .modal-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-    }
-    
-    .modal-button {
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all 0.3s;
-    }
-    
-    .modal-confirm {
-      background-color: var(--success);
-      color: white;
-    }
-    
-    .modal-cancel {
-      background-color: var(--border);
-      color: var(--text);
-    }
-    
-    /* Airdrop section */
-    .airdrop-section {
-      background-color: rgba(0, 136, 204, 0.1);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 15px;
-      margin: 20px 0;
-      text-align: center;
-    }
-    
-    .airdrop-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .airdrop-title i {
-      margin-right: 8px;
-      color: var(--primary);
-    }
-    
-    .airdrop-button {
-      background: linear-gradient(135deg, var(--primary), var(--ton-orange));
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 10px;
-      transition: all 0.3s;
-    }
-    
-    .airdrop-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 136, 204, 0.4);
-    }
-    
-    /* Exchange icons section */
-    .exchange-section {
-      background-color: rgba(0, 136, 204, 0.1);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 15px;
-      margin: 20px 0;
-      text-align: center;
-    }
-    
-    .exchange-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .exchange-title i {
-      margin-right: 8px;
-      color: var(--primary);
-    }
-    
-    .exchange-icons {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-top: 15px;
-    }
-    
-    .exchange-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 12px;
-      background-color: var(--card-bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px;
-      transition: transform 0.3s;
-    }
-    
-    .exchange-icon img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-    
-    .exchange-icon:hover {
-      transform: scale(1.1);
-    }
-    
-    .exchange-phase {
-      font-size: 14px;
-      margin-top: 10px;
-      color: var(--text-secondary);
-    }
-    
-    .phase-highlight {
-      color: var(--primary);
-      font-weight: 600;
-    }
-    
-    /* Referral section */
-    .referral-section {
-      background-color: rgba(0, 136, 204, 0.1);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 15px;
-      margin: 20px 0;
-      text-align: center;
-    }
-    
-    .referral-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .referral-title i {
-      margin-right: 8px;
-      color: var(--primary);
-    }
-    
-    .referral-link-container {
-      background-color: var(--secondary);
-      border-radius: 8px;
-      padding: 12px;
-      margin: 15px 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    
-    .referral-link {
-      font-size: 14px;
-      color: var(--text);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex: 1;
-      text-align: left;
-    }
-    
-    .copy-button {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 12px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-      margin-left: 10px;
-    }
-    
-    .copy-button:hover {
-      background-color: var(--primary-dark);
-    }
-    
-    .referral-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    
-    .referral-stat {
-      background-color: rgba(0, 0, 0, 0.2);
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-    
-    .referral-stat-value {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 5px;
-    }
-    
-    .referral-stat-label {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-    
-    @media (max-width: 480px) {
-      .sale-stats {
-        grid-template-columns: 1fr;
-      }
-      
-      .token-header {
-        flex-direction: column;
-        text-align: center;
-      }
-      
-      .token-image {
-        margin-right: 0;
-        margin-bottom: 10px;
-      }
-      
-      .token-info {
-        text-align: center;
-      }
-      
-      .modal-buttons {
-        flex-direction: column;
-        gap: 10px;
-      }
-      
-      .modal-button {
-        width: 100%;
-      }
-      
-      .exchange-icons {
-        gap: 10px;
-      }
-      
-      .exchange-icon {
-        width: 50px;
-        height: 50px;
-      }
-      
-      .referral-stats {
-        grid-template-columns: 1fr;
-      }
-      
-      .header {
-        padding: 10px 15px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TestScan - Testnet Scanner</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #0d47a1;
+            --secondary: #ffb300;
+            --background: #121212;
+            --surface: #1e1e1e;
+            --surface-light: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+            --border: #333333;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            padding-bottom: 70px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--surface);
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .language-switcher {
+            position: relative;
+        }
+
+        .language-btn {
+            background: var(--surface-light);
+            border: none;
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--surface);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            width: 150px;
+            display: none;
+            z-index: 101;
+            overflow: hidden;
+        }
+
+        .language-dropdown.active {
+            display: block;
+        }
+
+        .language-option {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .language-option:hover {
+            background: var(--surface-light);
+        }
+
+        /* Main Content */
+        .container {
+            padding: 16px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 0;
+            margin-bottom: 20px;
+            scrollbar-width: none;
+        }
+
+        .filters::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Project Cards */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .project-card {
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .project-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .project-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .project-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--success);
+        }
+
+        .status-closed {
+            background: rgba(244, 67, 54, 0.2);
+            color: var(--error);
+        }
+
+        .status-distribution {
+            background: rgba(255, 152, 0, 0.2);
+            color: var(--warning);
+        }
+
+        .project-body {
+            padding: 16px;
+        }
+
+        .project-description {
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .project-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .project-network {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .network-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .trust-rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .rating-stars {
+            color: var(--secondary);
+        }
+
+        /* Daily Updates */
+        .daily-updates {
+            margin-top: 30px;
+        }
+
+        .update-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            box-shadow: var(--shadow);
+        }
+
+        .update-badge {
+            background: var(--secondary);
+            color: var(--background);
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .update-content h4 {
+            margin-bottom: 6px;
+        }
+
+        .update-content p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Project Details */
+        .project-details {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .project-hero {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .project-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .project-title h2 {
+            font-size: 1.5rem;
+        }
+
+        .project-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .info-value {
+            font-weight: 600;
+        }
+
+        .project-description-full {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .steps-section {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .steps-list {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .step-item {
+            counter-increment: step-counter;
+            margin-bottom: 16px;
+            padding-left: 40px;
+            position: relative;
+        }
+
+        .step-item::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .links-section {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .link-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            background: var(--surface-light);
+            border: none;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .link-btn:hover {
+            background: var(--primary);
+        }
+
+        /* Join Channel Button */
+        .join-channel-btn {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            z-index: 99;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            .projects-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .links-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="app-container">
+    <!-- Header -->
     <div class="header">
-      <div class="logo">
-        <img src="https://i.suar.me/NzAB4/l" alt="GW Token">
-        <span>GW Pre-Sale</span>
-      </div>
-      <div class="wallet-controls">
-        <div id="ton-connect" class="wallet-connect"></div>
-      </div>
-    </div>
-    
-    <div class="main-content">
-      <div class="sale-card">
-        <div class="token-header">
-          <img src="https://i.suar.me/NzAB4/l" alt="GW Token" class="token-image">
-          <div class="token-info">
-            <div class="token-name">Gift Winner</div>
-            <div class="token-symbol">GW</div>
-            <div class="network-badge">
-              <img src="https://ton.org/download/ton_symbol.png" alt="TON">
-              <span>TON Network</span>
-            </div>
-          </div>
+        <div class="logo">
+            <div class="logo-icon">TS</div>
+            <div class="logo-text">TestScan</div>
         </div>
-        
-        <div class="divider"></div>
-        
-        <div class="user-info" id="user-info" style="display: none;">
-          Hello, <span id="username">User</span>! Connect your wallet to participate.
-        </div>
-        
-        <div class="phase-info">
-          <div class="phase-title">PHASE 1 - PRE-MARKET SALE</div>
-          <div class="phase-details">
-            1 TON buys 20 GW tokens<br>
-            Minimum purchase: 1 TON
-          </div>
-        </div>
-        
-        <div class="sale-stats">
-          <div class="stat-card">
-            <div class="stat-value">10M</div>
-            <div class="stat-label">Total Phase Supply</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="sold-amount">6.79M</div>
-            <div class="stat-label">GW Tokens Sold</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">100M</div>
-            <div class="stat-label">Total GW Supply</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">67.9%</div>
-            <div class="stat-label">Sold in Phase 1</div>
-          </div>
-        </div>
-        
-        <div class="progress-container">
-          <div class="progress-labels">
-            <span>6.79M GW Sold</span>
-            <span>10M GW</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" id="progress-fill" style="width: 67.9%"></div>
-          </div>
-        </div>
-        
-        <div class="wallet-status" id="wallet-status">
-          <i class="fas fa-wallet disconnected"></i>
-          <span>Wallet not connected</span>
-        </div>
-        
-        <div class="buy-section">
-          <form class="buy-form" id="buy-form">
-            <div class="input-group">
-              <label class="input-label">Amount to invest (TON)</label>
-              <input type="number" class="input-field" id="ton-amount" min="1" step="1" placeholder="Enter TON amount">
-            </div>
-            
-            <div class="price-info">
-              You will receive: <span class="highlight" id="gw-amount">0</span> GW tokens
-            </div>
-            
-            <button type="button" class="buy-button" id="buy-button" disabled>
-              BUY GW TOKENS
+        <div class="language-switcher">
+            <button class="language-btn" id="languageBtn">
+                <span>English</span>
+                <span>▼</span>
             </button>
-          </form>
+            <div class="language-dropdown" id="languageDropdown">
+                <div class="language-option" data-lang="en">English</div>
+                <div class="language-option" data-lang="fr">Français</div>
+                <div class="language-option" data-lang="ar">العربية</div>
+            </div>
         </div>
-        
-        <!-- GW Wallet Section -->
-        <div class="wallet-section" id="wallet-section">
-          <div class="wallet-header">
-            <div class="wallet-title">
-              <img src="https://i.suar.me/NzAB4/l" alt="GW">
-              <span>Your GW Wallet</span>
-            </div>
-          </div>
-          <div class="wallet-balance">
-            <img src="https://i.suar.me/NzAB4/l" alt="GW">
-            <span id="user-gw-balance">0</span> GW
-          </div>
-          <button class="withdraw-button" id="withdraw-button" disabled>
-            WITHDRAW GW TOKENS
-          </button>
-        </div>
-        
-        <!-- Referral Section -->
-        <div class="referral-section">
-          <div class="referral-title">
-            <i class="fas fa-user-plus"></i>
-            Your Referral Link
-          </div>
-          <p>Share your referral link and earn 10% commission on every purchase!</p>
-          
-          <div class="referral-link-container">
-            <div class="referral-link" id="referral-link">Loading...</div>
-            <button class="copy-button" id="copy-button">
-              <i class="fas fa-copy"></i>
-            </button>
-          </div>
-          
-          <div class="referral-stats">
-            <div class="referral-stat">
-              <div class="referral-stat-value" id="referral-count">0</div>
-              <div class="referral-stat-label">Referrals</div>
-            </div>
-            <div class="referral-stat">
-              <div class="referral-stat-value" id="referral-earnings">0</div>
-              <div class="referral-stat-label">GW Earnings</div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Exchange Listing Section -->
-        <div class="exchange-section">
-          <div class="exchange-title">
-            <i class="fas fa-exchange-alt"></i>
-            GW Token Exchange Listings
-          </div>
-          <p>GW token will be listed in multiple phases:</p>
-          
-          <div class="exchange-phase">
-            <span class="phase-highlight">Phase 2:</span> Listing on decentralized exchanges (DEX)
-          </div>
-          
-          <div class="exchange-phase">
-            <span class="phase-highlight">Phase 3:</span> Listing on top-tier centralized exchanges
-          </div>
-          
-          <div class="exchange-icons">
-            <div class="exchange-icon">
-              <img src="https://i.suar.me/xpj82/l" alt="Binance">
-            </div>
-            <div class="exchange-icon">
-              <img src="https://i.suar.me/rplqp/l" alt="OKX">
-            </div>
-            <div class="exchange-icon">
-              <img src="https://i.suar.me/op2ag/l" alt="Bybit">
-            </div>
-            <div class="exchange-icon">
-              <img src="https://i.suar.me/7a7Mr/l" alt="Bitget">
-            </div>
-          </div>
-        </div>
-        
-        <!-- Airdrop Section -->
-        <div class="airdrop-section">
-          <div class="airdrop-title">
-            <i class="fas fa-parachute-box"></i>
-            GW Token Airdrop
-          </div>
-          <p>Participate in our airdrop program to earn free GW tokens!</p>
-          <a href="https://t.me/GiftwinerBot" class="airdrop-button" target="_blank">
-            JOIN AIRDROP
-          </a>
-        </div>
-        
-        <div class="status-message" id="status-message"></div>
-        
-        <a href="https://t.me/giftwiner" class="telegram-link" target="_blank">
-          <i class="fab fa-telegram"></i>
-          Join our Telegram for updates
-        </a>
-      </div>
     </div>
-  </div>
 
-  <!-- Withdrawal Confirmation Modal -->
-  <div class="modal" id="withdraw-modal">
-    <div class="modal-content">
-      <div class="modal-title">Confirm Withdrawal</div>
-      <div class="modal-message" id="withdraw-message">
-        Withdrawal will be available after Phase 1 ends.
-      </div>
-      <div class="modal-buttons">
-        <button class="modal-button modal-cancel" id="cancel-withdraw">OK, Got it</button>
-      </div>
+    <!-- Home Page -->
+    <div class="container" id="homePage">
+        <h2 class="section-title">Ongoing Testnets</h2>
+        
+        <!-- Filters -->
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="ethereum">Ethereum</button>
+            <button class="filter-btn" data-filter="solana">Solana</button>
+            <button class="filter-btn" data-filter="sui">Sui</button>
+            <button class="filter-btn" data-filter="base">Base</button>
+            <button class="filter-btn" data-filter="ton">TON</button>
+            <button class="filter-btn" data-filter="polygon">Polygon</button>
+            <button class="filter-btn" data-filter="arbitrum">Arbitrum</button>
+        </div>
+        
+        <!-- Projects Grid -->
+        <div class="projects-grid" id="projectsGrid">
+            <!-- Projects will be dynamically inserted here -->
+        </div>
+        
+        <!-- Daily Updates -->
+        <div class="daily-updates">
+            <h2 class="section-title">Daily Updates</h2>
+            <div class="update-card">
+                <div class="update-badge">NEW</div>
+                <div class="update-content">
+                    <h4>ZetaChain Testnet Launched</h4>
+                    <p>ZetaChain has launched its public testnet with rewards for early participants.</p>
+                </div>
+            </div>
+            <div class="update-card">
+                <div class="update-badge">UPDATE</div>
+                <div class="update-content">
+                    <h4>Starknet Airdrop Confirmed</h4>
+                    <p>Starknet has confirmed a token airdrop for testnet participants. Distribution starts next week.</p>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    // App State
-    const appState = {
-      walletConnected: false,
-      walletAddress: null,
-      tgUser: null,
-      tgUsername: null,
-      gwSold: 6790000, // 6.79M GW sold
-      userGWBalance: 0,
-      referralEarnings: 0,
-      referralCount: 0,
-      gwPrice: 0.05, // 1 TON = 20 GW (0.05 TON per GW)
-      googleSheetURL: 'https://script.google.com/macros/s/YOUR_GOOGLE_SCRIPT_ID/exec', // Replace with your Google Apps Script URL
-      tonWalletAddress: 'UQCTZAMbXoN5T43K9gJXH8GYWBmIstXrUrdoV9kv3btN1Ad3', // Your TON wallet address
-      sheetName: 'Giftwinner' // Name of the Google Sheet
-    };
-    
-    // Initialize TonConnect
-    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-      manifestUrl: 'https://jamladz.github.io/oumniacool/tonconnect-manifest.json',
-      buttonRootId: 'ton-connect',
-      buttonTheme: {
-        backgroundColor: 'var(--primary)',
-        iconColor: 'white',
-        textColor: 'white',
-        modalBackground: 'var(--secondary)',
-        modalTextColor: 'white',
-        modalHoverBackground: 'rgba(0, 136, 204, 0.1)'
-      }
-    });
-    
-    // DOM Elements
-    const walletSection = document.getElementById('wallet-section');
-    const userGWBalanceElement = document.getElementById('user-gw-balance');
-    const withdrawButton = document.getElementById('withdraw-button');
-    const withdrawModal = document.getElementById('withdraw-modal');
-    const cancelWithdrawBtn = document.getElementById('cancel-withdraw');
-    const referralLinkElement = document.getElementById('referral-link');
-    const copyButton = document.getElementById('copy-button');
-    const referralCountElement = document.getElementById('referral-count');
-    const referralEarningsElement = document.getElementById('referral-earnings');
-    
-    // Update GW balance UI
-    function updateGWBalanceUI() {
-      userGWBalanceElement.textContent = appState.userGWBalance.toLocaleString();
-      
-      if (appState.userGWBalance > 0) {
-        walletSection.style.display = 'block';
-        withdrawButton.disabled = !appState.walletConnected;
-      } else {
-        walletSection.style.display = 'none';
-      }
-    }
-    
-    // Get Telegram user data if running in Telegram WebApp
-    function getTelegramUser() {
-      try {
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-          tg.expand();
-          appState.tgUser = tg.initDataUnsafe?.user;
-          
-          if (appState.tgUser) {
-            const username = appState.tgUser.username || `${appState.tgUser.first_name || ''} ${appState.tgUser.last_name || ''}`.trim();
-            document.getElementById('username').textContent = username || 'User';
-            document.getElementById('user-info').style.display = 'block';
+    <!-- Project Details Page -->
+    <div class="container project-details" id="projectDetails">
+        <button class="back-btn" id="backBtn">
+            <span>←</span> Back to Projects
+        </button>
+        
+        <div class="project-hero">
+            <div class="project-title">
+                <h2 id="detailProjectName">Project Name</h2>
+                <div class="project-status" id="detailStatus">Active</div>
+            </div>
             
-            // Store username for referral link
-            appState.tgUsername = username || 'user' + appState.tgUser.id;
+            <div class="project-info">
+                <div class="info-item">
+                    <span class="info-label">Network</span>
+                    <span class="info-value" id="detailNetwork">Ethereum</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Trust Rating</span>
+                    <span class="info-value" id="detailRating">8.5/10</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Participants</span>
+                    <span class="info-value" id="detailParticipants">12,458</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Duration</span>
+                    <span class="info-value" id="detailDuration">30 days</span>
+                </div>
+            </div>
             
-            // Generate referral link
-            generateReferralLink();
-          }
-        }
-      } catch (e) {
-        console.log('Not running in Telegram WebApp');
-      }
-    }
-    
-    // Generate referral link
-    function generateReferralLink() {
-      if (appState.tgUsername) {
-        const referralLink = `https://t.me/PremarketGift_bot?start=ref_${appState.tgUsername}`;
-        referralLinkElement.textContent = referralLink;
-      }
-    }
-    
-    // Update wallet status
-    function updateWalletStatus(wallet) {
-      const walletStatus = document.getElementById('wallet-status');
-      const buyButton = document.getElementById('buy-button');
-      
-      if (wallet) {
-        appState.walletConnected = true;
-        appState.walletAddress = wallet.account.address;
+            <div class="project-description-full" id="detailDescription">
+                Project description will appear here with full details about the testnet project.
+            </div>
+        </div>
         
-        const shortAddress = wallet.account.address.slice(0, 6) + '...' + wallet.account.address.slice(-4);
-        walletStatus.innerHTML = `<i class="fas fa-wallet connected"></i><span>Connected: ${shortAddress}</span>`;
-        walletStatus.classList.add('connected');
-        walletStatus.classList.remove('disconnected');
+        <div class="steps-section">
+            <h3>How to Participate</h3>
+            <ol class="steps-list" id="stepsList">
+                <!-- Steps will be dynamically inserted here -->
+            </ol>
+        </div>
         
-        buyButton.disabled = false;
-        
-        // Show wallet section if user has balance
-        if (appState.userGWBalance > 0) {
-          walletSection.style.display = 'block';
-        }
-        
-        // Enable withdraw button if user has balance
-        if (appState.userGWBalance > 0) {
-          withdrawButton.disabled = false;
-        }
-        
-        // Load user's GW balance from localStorage
-        loadUserBalance();
-      } else {
-        appState.walletConnected = false;
-        appState.walletAddress = null;
-        
-        walletStatus.innerHTML = '<i class="fas fa-wallet disconnected"></i><span>Wallet not connected</span>';
-        walletStatus.classList.add('disconnected');
-        walletStatus.classList.remove('connected');
-        
-        buyButton.disabled = true;
-        withdrawButton.disabled = true;
-      }
-    }
-    
-    // Calculate GW amount based on TON input
-    function calculateGW() {
-      const tonAmountInput = document.getElementById('ton-amount');
-      let tonAmount = parseFloat(tonAmountInput.value) || 0;
-      
-      // Enforce minimum limit
-      if (tonAmount < 1) {
-        tonAmount = 1;
-        tonAmountInput.value = 1;
-      }
-      
-      const gwAmount = Math.floor(tonAmount / appState.gwPrice);
-      document.getElementById('gw-amount').textContent = gwAmount.toLocaleString();
-      
-      const buyButton = document.getElementById('buy-button');
-      buyButton.disabled = !(appState.walletConnected && tonAmount >= 1);
-    }
-    
-    // Save user balance to localStorage
-    function saveUserBalance() {
-      if (appState.walletAddress) {
-        localStorage.setItem(`gwBalance_${appState.walletAddress}`, appState.userGWBalance.toString());
-        localStorage.setItem(`referralCount_${appState.walletAddress}`, appState.referralCount.toString());
-        localStorage.setItem(`referralEarnings_${appState.walletAddress}`, appState.referralEarnings.toString());
-      }
-    }
-    
-    // Load user balance from localStorage
-    function loadUserBalance() {
-      if (appState.walletAddress) {
-        const savedBalance = localStorage.getItem(`gwBalance_${appState.walletAddress}`);
-        if (savedBalance) {
-          appState.userGWBalance = parseInt(savedBalance) || 0;
-          updateGWBalanceUI();
-        }
-        
-        const savedRefCount = localStorage.getItem(`referralCount_${appState.walletAddress}`);
-        if (savedRefCount) {
-          appState.referralCount = parseInt(savedRefCount) || 0;
-          referralCountElement.textContent = appState.referralCount;
-        }
-        
-        const savedRefEarnings = localStorage.getItem(`referralEarnings_${appState.walletAddress}`);
-        if (savedRefEarnings) {
-          appState.referralEarnings = parseInt(savedRefEarnings) || 0;
-          referralEarningsElement.textContent = appState.referralEarnings.toLocaleString();
-        }
-      }
-    }
-    
-    // Send data to Google Sheet
-    async function sendToGoogleSheet(data) {
-      try {
-        // Add sheet name to data
-        data.sheetName = appState.sheetName;
-        
-        const response = await fetch(appState.googleSheetURL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(data)
-        });
-        
-        return true;
-      } catch (error) {
-        console.error('Error sending to Google Sheet:', error);
-        return false;
-      }
-    }
-    
-    // Process purchase
-    async function processPurchase() {
-      const tonAmount = parseFloat(document.getElementById('ton-amount').value);
-      const gwAmount = Math.floor(tonAmount / appState.gwPrice);
-      const statusMessage = document.getElementById('status-message');
-      
-      if (!appState.walletConnected) {
-        statusMessage.textContent = 'Please connect your wallet first';
-        statusMessage.className = 'status-message error';
-        return;
-      }
-      
-      if (tonAmount < 1) {
-        statusMessage.textContent = 'Minimum purchase is 1 TON';
-        statusMessage.className = 'status-message error';
-        return;
-      }
-      
-      try {
-        // Send transaction
-        const tx = {
-          validUntil: Math.floor(Date.now() / 1000) + 600, // 10 minutes
-          messages: [
-            {
-              address: appState.tonWalletAddress,
-              amount: (tonAmount * 1000000000).toString(), // Convert TON to nanoTON
+        <div class="links-section">
+            <h3>Official Links</h3>
+            <div class="links-grid" id="linksGrid">
+                <!-- Links will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Join Channel Button -->
+    <button class="join-channel-btn" id="joinChannelBtn">
+        <span>Join TestScan News Channel</span>
+    </button>
+
+    <script>
+        // Initialize Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.disableVerticalSwipes();
+        tg.enableClosingConfirmation();
+        tg.setHeaderColor('#121212');
+        tg.setBackgroundColor('#121212');
+        tg.setBottomBarColor('#1a73e8');
+
+        // Language translations
+        const translations = {
+            en: {
+                title: "TestScan",
+                ongoingTestnets: "Ongoing Testnets",
+                dailyUpdates: "Daily Updates",
+                backToProjects: "Back to Projects",
+                howToParticipate: "How to Participate",
+                officialLinks: "Official Links",
+                joinChannel: "Join TestScan News Channel",
+                statusActive: "Active",
+                statusClosed: "Closed",
+                statusDistribution: "Distribution",
+                trustRating: "Trust Rating",
+                participants: "Participants",
+                duration: "Duration",
+                network: "Network",
+                new: "NEW",
+                update: "UPDATE"
+            },
+            fr: {
+                title: "TestScan",
+                ongoingTestnets: "Testnets en Cours",
+                dailyUpdates: "Mises à Jour Quotidiennes",
+                backToProjects: "Retour aux Projets",
+                howToParticipate: "Comment Participer",
+                officialLinks: "Liens Officiels",
+                joinChannel: "Rejoindre la Chaîne TestScan",
+                statusActive: "Actif",
+                statusClosed: "Fermé",
+                statusDistribution: "Distribution",
+                trustRating: "Note de Confiance",
+                participants: "Participants",
+                duration: "Durée",
+                network: "Réseau",
+                new: "NOUVEAU",
+                update: "MISE À JOUR"
+            },
+            ar: {
+                title: "TestScan",
+                ongoingTestnets: "شبكات الاختبار الجارية",
+                dailyUpdates: "التحديثات اليومية",
+                backToProjects: "العودة إلى المشاريع",
+                howToParticipate: "كيفية المشاركة",
+                officialLinks: "الروابط الرسمية",
+                joinChannel: "انضم إلى قناة TestScan",
+                statusActive: "نشط",
+                statusClosed: "مغلق",
+                statusDistribution: "توزيع",
+                trustRating: "تقييم الثقة",
+                participants: "المشاركون",
+                duration: "المدة",
+                network: "الشبكة",
+                new: "جديد",
+                update: "تحديث"
             }
-          ]
         };
-        
-        const result = await tonConnectUI.sendTransaction(tx);
-        
-        // If transaction succeeds
-        if (result) {
-          // Update sold amount and user balance
-          appState.gwSold += gwAmount;
-          appState.userGWBalance += gwAmount;
-          
-          document.getElementById('sold-amount').textContent = (appState.gwSold / 1000000).toFixed(2) + 'M';
-          const progressPercent = Math.min(100, (appState.gwSold / 10000000) * 100);
-          document.getElementById('progress-fill').style.width = `${progressPercent}%`;
-          
-          // Update user balance UI
-          updateGWBalanceUI();
-          saveUserBalance();
-          
-          // Send purchase data to Google Sheet
-          const purchaseData = {
-            type: 'purchase',
-            username: appState.tgUser?.username || 'Unknown',
-            walletAddress: appState.walletAddress,
-            tonAmount: tonAmount,
-            gwAmount: gwAmount,
-            date: new Date().toISOString()
-          };
-          
-          const sheetSuccess = await sendToGoogleSheet(purchaseData);
-          
-          if (sheetSuccess) {
-            statusMessage.textContent = `Success! You purchased ${gwAmount.toLocaleString()} GW tokens`;
-            statusMessage.className = 'status-message success';
-          } else {
-            statusMessage.textContent = `Purchase successful but data not saved. Contact support with TX: ${result.boc.slice(0, 10)}...`;
-            statusMessage.className = 'status-message error';
-          }
-          
-          // Reset form
-          document.getElementById('ton-amount').value = '';
-          calculateGW();
+
+        // Current language
+        let currentLang = 'en';
+
+        // Sample projects data
+        const projects = [
+            {
+                id: 1,
+                name: "Starknet Quantum",
+                description: "Layer 2 scaling solution for Ethereum with ZK-Rollup technology.",
+                network: "ethereum",
+                status: "active",
+                trustRating: 9.2,
+                participants: 12458,
+                duration: "45 days",
+                steps: [
+                    "Visit the official Starknet website",
+                    "Connect your Ethereum wallet",
+                    "Request testnet ETH from faucet",
+                    "Complete the provided tasks",
+                    "Submit your wallet address for rewards"
+                ],
+                links: [
+                    { name: "Website", url: "https://starknet.io" },
+                    { name: "Twitter", url: "https://twitter.com/starknet" },
+                    { name: "Discord", url: "https://discord.gg/starknet" },
+                    { name: "Docs", url: "https://docs.starknet.io" }
+                ]
+            },
+            {
+                id: 2,
+                name: "Solana Eclipse",
+                description: "High-performance blockchain for decentralized applications and crypto-currencies.",
+                network: "solana",
+                status: "distribution",
+                trustRating: 8.7,
+                participants: 8921,
+                duration: "Completed",
+                steps: [
+                    "Download and set up Solana wallet",
+                    "Get testnet SOL from faucet",
+                    "Interact with dApps on testnet",
+                    "Complete bounty tasks",
+                    "Wait for token distribution"
+                ],
+                links: [
+                    { name: "Website", url: "https://solana.com" },
+                    { name: "Twitter", url: "https://twitter.com/solana" },
+                    { name: "Discord", url: "https://discord.gg/solana" },
+                    { name: "Docs", url: "https://docs.solana.com" }
+                ]
+            },
+            {
+                id: 3,
+                name: "Sui Network",
+                description: "Next-generation smart contract platform with high throughput and low latency.",
+                network: "sui",
+                status: "active",
+                trustRating: 8.1,
+                participants: 7543,
+                duration: "30 days",
+                steps: [
+                    "Install Sui wallet extension",
+                    "Get test SUI tokens",
+                    "Try out Sui dApps",
+                    "Report bugs and issues",
+                    "Complete assigned tasks"
+                ],
+                links: [
+                    { name: "Website", url: "https://sui.io" },
+                    { name: "Twitter", url: "https://twitter.com/SuiNetwork" },
+                    { name: "Discord", url: "https://discord.gg/sui" },
+                    { name: "Docs", url: "https://docs.sui.io" }
+                ]
+            },
+            {
+                id: 4,
+                name: "Base Protocol",
+                description: "Coinbase's Layer 2 solution built on Optimism's OP Stack.",
+                network: "base",
+                status: "active",
+                trustRating: 8.9,
+                participants: 15632,
+                duration: "60 days",
+                steps: [
+                    "Bridge ETH to Base testnet",
+                    "Explore Base ecosystem dApps",
+                    "Complete quests on Galxe",
+                    "Provide liquidity on test DEX",
+                    "Mint test NFTs"
+                ],
+                links: [
+                    { name: "Website", url: "https://base.org" },
+                    { name: "Twitter", url: "https://twitter.com/base" },
+                    { name: "Discord", url: "https://discord.gg/base" },
+                    { name: "Docs", url: "https://docs.base.org" }
+                ]
+            },
+            {
+                id: 5,
+                name: "TON Blockchain",
+                description: "Originally developed by Telegram, now community-driven blockchain platform.",
+                network: "ton",
+                status: "distribution",
+                trustRating: 7.8,
+                participants: 6321,
+                duration: "Completed",
+                steps: [
+                    "Set up TON wallet",
+                    "Get test TON coins",
+                    "Try TON DNS and storage",
+                    "Test TON-based dApps",
+                    "Submit feedback form"
+                ],
+                links: [
+                    { name: "Website", url: "https://ton.org" },
+                    { name: "Twitter", url: "https://twitter.com/ton_blockchain" },
+                    { name: "Telegram", url: "https://t.me/tonblockchain" },
+                    { name: "Docs", url: "https://docs.ton.org" }
+                ]
+            },
+            {
+                id: 6,
+                name: "Polygon zkEVM",
+                description: "Ethereum-compatible zkRollup with full EVM opcode equivalence.",
+                network: "polygon",
+                status: "closed",
+                trustRating: 9.0,
+                participants: 10245,
+                duration: "Completed",
+                steps: [
+                    "Bridge to Polygon zkEVM testnet",
+                    "Deploy and test smart contracts",
+                    "Interact with zkEVM dApps",
+                    "Report any issues found",
+                    "Complete the feedback survey"
+                ],
+                links: [
+                    { name: "Website", url: "https://polygon.technology" },
+                    { name: "Twitter", url: "https://twitter.com/0xPolygon" },
+                    { name: "Discord", url: "https://discord.gg/polygon" },
+                    { name: "Docs", url: "https://docs.polygon.technology" }
+                ]
+            }
+        ];
+
+        // DOM Elements
+        const homePage = document.getElementById('homePage');
+        const projectDetails = document.getElementById('projectDetails');
+        const projectsGrid = document.getElementById('projectsGrid');
+        const languageBtn = document.getElementById('languageBtn');
+        const languageDropdown = document.getElementById('languageDropdown');
+        const backBtn = document.getElementById('backBtn');
+        const joinChannelBtn = document.getElementById('joinChannelBtn');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        // Initialize the app
+        function initApp() {
+            renderProjects();
+            setupEventListeners();
+            updateLanguage(currentLang);
         }
-      } catch (error) {
-        console.error('Transaction failed:', error);
-        statusMessage.textContent = 'Transaction failed: ' + error.message;
-        statusMessage.className = 'status-message error';
-      }
-    }
-    
-    // Initialize app
-    document.addEventListener('DOMContentLoaded', () => {
-      // Get Telegram user data
-      getTelegramUser();
-      
-      // Set up wallet connection listener
-      tonConnectUI.onStatusChange((wallet) => {
-        updateWalletStatus(wallet);
-      });
-      
-      // Set up TON amount input listener
-      document.getElementById('ton-amount').addEventListener('input', calculateGW);
-      
-      // Set up buy button listener
-      document.getElementById('buy-button').addEventListener('click', processPurchase);
-      
-      // Set up withdraw button listener
-      withdrawButton.addEventListener('click', () => {
-        withdrawModal.style.display = 'flex';
-      });
-      
-      // Set up modal button listeners
-      cancelWithdrawBtn.addEventListener('click', () => {
-        withdrawModal.style.display = 'none';
-      });
-      
-      // Close modal when clicking outside
-      withdrawModal.addEventListener('click', (e) => {
-        if (e.target === withdrawModal) {
-          withdrawModal.style.display = 'none';
-        }
-      });
-      
-      // Set up copy referral link button
-      copyButton.addEventListener('click', () => {
-        const link = referralLinkElement.textContent;
-        if (link && link !== 'Loading...') {
-          navigator.clipboard.writeText(link)
-            .then(() => {
-              const statusMessage = document.getElementById('status-message');
-              statusMessage.textContent = 'Referral link copied to clipboard!';
-              statusMessage.className = 'status-message success';
-              setTimeout(() => {
-                statusMessage.style.display = 'none';
-              }, 3000);
-            })
-            .catch(err => {
-              console.error('Failed to copy: ', err);
+
+        // Render projects to the grid
+        function renderProjects(filter = 'all') {
+            projectsGrid.innerHTML = '';
+            
+            const filteredProjects = filter === 'all' 
+                ? projects 
+                : projects.filter(project => project.network === filter);
+            
+            filteredProjects.forEach(project => {
+                const statusClass = `status-${project.status}`;
+                let statusText = '';
+                
+                switch(project.status) {
+                    case 'active': statusText = translations[currentLang].statusActive; break;
+                    case 'closed': statusText = translations[currentLang].statusClosed; break;
+                    case 'distribution': statusText = translations[currentLang].statusDistribution; break;
+                }
+                
+                const projectCard = document.createElement('div');
+                projectCard.className = 'project-card';
+                projectCard.innerHTML = `
+                    <div class="project-header">
+                        <div class="project-name">${project.name}</div>
+                        <div class="project-status ${statusClass}">${statusText}</div>
+                    </div>
+                    <div class="project-body">
+                        <p class="project-description">${project.description}</p>
+                        <div class="project-meta">
+                            <div class="project-network">
+                                <div class="network-icon" style="background: ${getNetworkColor(project.network)}"></div>
+                                <span>${project.network.charAt(0).toUpperCase() + project.network.slice(1)}</span>
+                            </div>
+                            <div class="trust-rating">
+                                <span class="rating-stars">${getRatingStars(project.trustRating)}</span>
+                                <span>${project.trustRating}/10</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                projectCard.addEventListener('click', () => showProjectDetails(project));
+                projectsGrid.appendChild(projectCard);
             });
         }
-      });
-      
-      // Initialize GW calculation
-      calculateGW();
-      
-      // Update referral stats
-      referralCountElement.textContent = appState.referralCount;
-      referralEarningsElement.textContent = appState.referralEarnings.toLocaleString();
-    });
-  </script>
+
+        // Show project details
+        function showProjectDetails(project) {
+            homePage.style.display = 'none';
+            projectDetails.style.display = 'block';
+            
+            // Update project details
+            document.getElementById('detailProjectName').textContent = project.name;
+            document.getElementById('detailNetwork').textContent = project.network.charAt(0).toUpperCase() + project.network.slice(1);
+            document.getElementById('detailRating').textContent = `${project.trustRating}/10`;
+            document.getElementById('detailParticipants').textContent = project.participants.toLocaleString();
+            document.getElementById('detailDuration').textContent = project.duration;
+            document.getElementById('detailDescription').textContent = project.description;
+            
+            // Update status
+            const statusElement = document.getElementById('detailStatus');
+            statusElement.className = `project-status status-${project.status}`;
+            switch(project.status) {
+                case 'active': statusElement.textContent = translations[currentLang].statusActive; break;
+                case 'closed': statusElement.textContent = translations[currentLang].statusClosed; break;
+                case 'distribution': statusElement.textContent = translations[currentLang].statusDistribution; break;
+            }
+            
+            // Render steps
+            const stepsList = document.getElementById('stepsList');
+            stepsList.innerHTML = '';
+            project.steps.forEach(step => {
+                const stepItem = document.createElement('li');
+                stepItem.className = 'step-item';
+                stepItem.textContent = step;
+                stepsList.appendChild(stepItem);
+            });
+            
+            // Render links
+            const linksGrid = document.getElementById('linksGrid');
+            linksGrid.innerHTML = '';
+            project.links.forEach(link => {
+                const linkBtn = document.createElement('button');
+                linkBtn.className = 'link-btn';
+                linkBtn.textContent = link.name;
+                linkBtn.addEventListener('click', () => {
+                    window.open(link.url, '_blank');
+                });
+                linksGrid.appendChild(linkBtn);
+            });
+        }
+
+        // Get network color
+        function getNetworkColor(network) {
+            const colors = {
+                ethereum: '#627EEA',
+                solana: '#00FFA3',
+                sui: '#6FBCF0',
+                base: '#0052FF',
+                ton: '#0088CC',
+                polygon: '#8247E5',
+                arbitrum: '#2D374B'
+            };
+            return colors[network] || '#666666';
+        }
+
+        // Get rating stars
+        function getRatingStars(rating) {
+            const fullStars = Math.floor(rating / 2);
+            const halfStar = rating % 2 >= 1 ? '★' : '';
+            const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+            
+            return '★'.repeat(fullStars) + halfStar + '☆'.repeat(emptyStars);
+        }
+
+        // Update language
+        function updateLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            
+            // Update UI texts
+            document.querySelector('.ongoingTestnets').textContent = t.ongoingTestnets;
+            document.querySelector('.dailyUpdates').textContent = t.dailyUpdates;
+            document.getElementById('backBtn').innerHTML = `<span>←</span> ${t.backToProjects}`;
+            document.querySelector('.steps-section h3').textContent = t.howToParticipate;
+            document.querySelector('.links-section h3').textContent = t.officialLinks;
+            document.getElementById('joinChannelBtn').innerHTML = `<span>${t.joinChannel}</span>`;
+            
+            // Update language button
+            languageBtn.querySelector('span').textContent = 
+                lang === 'en' ? 'English' : lang === 'fr' ? 'Français' : 'العربية';
+            
+            // Update status texts in project cards
+            document.querySelectorAll('.project-status').forEach(el => {
+                if (el.classList.contains('status-active')) {
+                    el.textContent = t.statusActive;
+                } else if (el.classList.contains('status-closed')) {
+                    el.textContent = t.statusClosed;
+                } else if (el.classList.contains('status-distribution')) {
+                    el.textContent = t.statusDistribution;
+                }
+            });
+            
+            // Update update badges
+            document.querySelectorAll('.update-badge').forEach((badge, index) => {
+                badge.textContent = index === 0 ? t.new : t.update;
+            });
+            
+            // Re-render projects to update texts
+            const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
+            renderProjects(activeFilter);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Language switcher
+            languageBtn.addEventListener('click', () => {
+                languageDropdown.classList.toggle('active');
+            });
+            
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    const lang = option.dataset.lang;
+                    updateLanguage(lang);
+                    languageDropdown.classList.remove('active');
+                });
+            });
+            
+            // Filter buttons
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderProjects(btn.dataset.filter);
+                });
+            });
+            
+            // Back button
+            backBtn.addEventListener('click', () => {
+                projectDetails.style.display = 'none';
+                homePage.style.display = 'block';
+            });
+            
+            // Join channel button
+            joinChannelBtn.addEventListener('click', () => {
+                tg.openTelegramLink('https://t.me/testscan_news');
+            });
+            
+            // Close language dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!languageBtn.contains(e.target) && !languageDropdown.contains(e.target)) {
+                    languageDropdown.classList.remove('active');
+                }
+            });
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
 </body>
 </html>
