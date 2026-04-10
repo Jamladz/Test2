@@ -5,10 +5,7 @@ import { useTonWallet, useTonConnectUI } from '@tonconnect/ui-react';
 import { cn } from './lib/utils';
 import { playSound, toggleMute, getIsMuted } from './lib/sounds';
 import { translations, Language } from './lib/i18n';
-import confetti from 'canvas-confetti';
-
-// Create a custom confetti instance without workers to avoid OffscreenCanvas/getBoundingClientRect errors
-const myConfetti = confetti.create(undefined, { useWorker: false, resize: true });
+import { myConfetti } from './lib/confetti';  // استيراد من الملف الجديد
 import WebApp from '@twa-dev/sdk';
 
 // --- Icons ---
