@@ -1,0 +1,5 @@
+{
+  "name": "TonQash",
+  "description": "A cartoonish Telegram Mini App game where users buy slices of a square with TON coin, featuring bots, referrals, and a moving dot winner selection.",
+  "requestFramePermissions": []
+}

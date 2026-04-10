@@ -1,8 +1,5 @@
 {
+  "url": "https://portals-lait.vercel.app",
   "name": "TonQash",
-  "url": "https://jamladz.github.io/Teest1/",
-  "iconUrl": "https://i.suar.me/mgMaW/l",
-  "manifestVersion": "2",
-  "termsOfUseUrl": "https://jamladz.github.io/Teest1/terms.html",
-  "privacyPolicyUrl": "https://jamladz.github.io/Teest1/privacy.html"
+  "iconUrl": "https://ton.org/download/ton_symbol.png"
 }
