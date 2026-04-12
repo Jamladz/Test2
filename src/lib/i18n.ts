@@ -82,7 +82,12 @@ export const translations = {
     totalWagered: "Total Wagered",
     welcomeDepositTitle: "Wallet Connected!",
     welcomeDepositDesc: "Your wallet is connected but your balance is 0 TON. Deposit now to start playing and winning!",
-    depositNow: "Deposit Now"
+    depositNow: "Deposit Now",
+    updateInfoTitle: "Updates & Announcements",
+    updateMsg1: "Referral system is under development. All your referrals have been securely recorded. The next update will display your referral count and rewards.",
+    updateMsg2: "More exciting games will be added in upcoming updates!",
+    updateMsg3: "To users who lost bets: We are launching our own token! It will be distributed to you and listed on exchanges to compensate for losses, funded by game fees and ad revenue.",
+    closeBtn: "Close"
   },
   ru: {
     appName: "TonQash",
@@ -167,7 +172,12 @@ export const translations = {
     totalWagered: "Всего ставок",
     welcomeDepositTitle: "Кошелек подключен!",
     welcomeDepositDesc: "Ваш кошелек подключен, но ваш баланс 0 TON. Пополните сейчас, чтобы начать играть и выигрывать!",
-    depositNow: "Пополнить сейчас"
+    depositNow: "Пополнить сейчас",
+    updateInfoTitle: "Обновления и анонсы",
+    updateMsg1: "Реферальная система находится в разработке. Все ваши рефералы надежно записаны. В следующем обновлении будет отображено количество рефералов и награды.",
+    updateMsg2: "Больше захватывающих игр будет добавлено в следующих обновлениях!",
+    updateMsg3: "Пользователям, проигравшим ставки: Мы запускаем собственный токен! Он будет распределен среди вас и добавлен на биржи для компенсации потерь за счет комиссий игр и доходов от рекламы.",
+    closeBtn: "Закрыть"
   },
   ar: {
     appName: "TonQash",
@@ -252,7 +262,12 @@ export const translations = {
     totalWagered: "إجمالي الرهانات",
     welcomeDepositTitle: "تم ربط المحفظة!",
     welcomeDepositDesc: "تم ربط محفظتك ولكن رصيدك 0 TON. قم بالإيداع الآن لبدء اللعب والفوز!",
-    depositNow: "إيداع الآن"
+    depositNow: "إيداع الآن",
+    updateInfoTitle: "التحديثات والإعلانات",
+    updateMsg1: "نظام الإحالة قيد التطوير. تم تسجيل جميع إحالاتك بأمان. في التحديث القادم سيظهر عدد الإحالات والرصيد.",
+    updateMsg2: "سيتم إضافة ألعاب أخرى مثيرة في التحديث القادم!",
+    updateMsg3: "للمستخدمين الذين خسروا في الرهانات: سنقوم بإطلاق عملتنا الخاصة! سيتم توزيع العملة عليكم وإدراجها في منصات لتعويض الخسائر، وذلك من رسوم اللعب والإعلانات.",
+    closeBtn: "إغلاق"
   }
 };
 
