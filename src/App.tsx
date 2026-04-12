@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Wallet, Users, User, Trophy, Play, Loader2, Share2, Copy, CheckCircle2, ArrowDownToLine, ArrowUpFromLine, Globe, Volume2, VolumeX, CheckSquare, Tv } from 'lucide-react';
+import { Wallet, Users, User, Trophy, Play, Loader2, Share2, Copy, CheckCircle2, ArrowDownToLine, ArrowUpFromLine, Globe, Volume2, VolumeX, CheckSquare, Tv, Bell } from 'lucide-react';
 import { useTonWallet, useTonConnectUI } from '@tonconnect/ui-react';
 import { cn } from './lib/utils';
 import { playSound, toggleMute, getIsMuted } from './lib/sounds';
@@ -88,8 +88,17 @@ export default function App() {
   const [depositAmount, setDepositAmount] = useState(1);
   const [isDepositing, setIsDepositing] = useState(false);
   const [showWelcomeDeposit, setShowWelcomeDeposit] = useState(false);
+  const [showUpdateInfo, setShowUpdateInfo] = useState(false);
   const prevWalletConnected = useRef(false);
   
+  useEffect(() => {
+    const hasSeenUpdate = localStorage.getItem('tq_update_seen_v2');
+    if (!hasSeenUpdate) {
+      setShowUpdateInfo(true);
+      localStorage.setItem('tq_update_seen_v2', 'true');
+    }
+  }, []);
+
   useEffect(() => {
     localStorage.setItem('tq_real_balance_v2', balance.toString());
   }, [balance]);
@@ -148,6 +157,7 @@ export default function App() {
     }
     return 'TelegramUser';
   });
+  const [photoUrl, setPhotoUrl] = useState(() => WebApp.initDataUnsafe?.user?.photo_url || '');
   const [lang, setLang] = useState<Language>('en');
   const [muted, setMuted] = useState(getIsMuted());
   const [liveUsers, setLiveUsers] = useState(2453);
@@ -307,7 +317,7 @@ export default function App() {
             )}
           >
             <Wallet size={18} className="drop-shadow-md" />
-            {walletConnected ? `${balance.toFixed(2)} TON` : t('connect')}
+            {walletConnected || balance > 0 ? `${balance.toFixed(2)} TON` : t('connect')}
           </button>
         </div>
         
@@ -337,7 +347,7 @@ export default function App() {
           <ReferralsTab t={t} userId={userId} />
         </div>
         <div className={cn("absolute inset-0 overflow-y-auto transition-opacity duration-300 pb-32", activeTab === 'profile' ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0")}>
-          <ProfileTab username={username} balance={balance} setBalance={setBalance} walletConnected={walletConnected} t={t} onDepositClick={() => setShowDeposit(true)} />
+          <ProfileTab username={username} photoUrl={photoUrl} balance={balance} setBalance={setBalance} walletConnected={walletConnected} t={t} onDepositClick={() => setShowDeposit(true)} />
         </div>
       </main>
 
@@ -351,8 +361,58 @@ export default function App() {
         </div>
       </nav>
 
+      {/* Floating Update Button */}
+      <button
+        onClick={() => { playSound('click'); setShowUpdateInfo(true); }}
+        className="fixed bottom-24 right-4 z-40 w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg cartoon-border animate-bounce"
+      >
+        <Bell className="text-white" size={24} />
+      </button>
+
       {/* Modals */}
       <AnimatePresence>
+        {showUpdateInfo && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-[var(--color-game-card)] p-6 rounded-3xl cartoon-border w-full max-w-sm flex flex-col gap-4 max-h-[80vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg cartoon-border shrink-0">
+                  <Bell className="text-white" size={24} />
+                </div>
+                <h3 className="text-xl font-bold text-stroke text-center">{t('updateInfoTitle')}</h3>
+              </div>
+              
+              <div className="flex flex-col gap-4">
+                <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 p-4 rounded-xl cartoon-border border-blue-500/50">
+                  <p className="text-blue-100 text-sm leading-relaxed font-semibold">{t('updateMsg1')}</p>
+                </div>
+                <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 p-4 rounded-xl cartoon-border border-green-500/50">
+                  <p className="text-green-100 text-sm leading-relaxed font-semibold">{t('updateMsg2')}</p>
+                </div>
+                <div className="bg-gradient-to-br from-red-500/20 to-rose-500/20 p-4 rounded-xl cartoon-border border-red-500/50">
+                  <p className="text-red-100 text-sm leading-relaxed font-semibold">{t('updateMsg3')}</p>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => { playSound('click'); setShowUpdateInfo(false); }} 
+                className="bg-gradient-to-b from-[var(--color-game-primary)] to-[var(--color-game-secondary)] text-white font-bold py-3 rounded-xl cartoon-button text-stroke mt-2 transition-colors"
+              >
+                {t('closeBtn')}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+
         {showWelcomeDeposit && (
           <motion.div 
             initial={{ opacity: 0 }}
@@ -807,16 +867,16 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
 
   const handleBuy = () => {
     playSound('click');
-    if (!walletConnected) {
-      alert(t('connectWalletFirst'));
-      return;
-    }
     if (buyAmount < MIN_BUY_IN) {
       alert(`${t('minDeposit1')}`);
       return;
     }
     if (balance < buyAmount) {
-      alert(t('txFailed')); // Reusing txFailed for generic error or we can add insufficientBalance
+      if (!walletConnected) {
+        alert(t('connectWalletFirst'));
+      } else {
+        alert(t('txFailed'));
+      }
       return;
     }
     
@@ -1226,6 +1286,7 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
   // Share Task State
   const [shareCount, setShareCount] = useState(() => parseInt(localStorage.getItem('tq_share_count') || '0'));
   const [shareCooldownEnd, setShareCooldownEnd] = useState(() => parseInt(localStorage.getItem('tq_share_cooldown_end') || '0'));
+  const [isSharing, setIsSharing] = useState(false);
 
   // Ads Task State
   const [adsWatched, setAdsWatched] = useState(() => parseInt(localStorage.getItem('tq_ads_watched') || '0'));
@@ -1263,6 +1324,7 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
   }, [now, adsResetTime]);
 
   const handleShare = () => {
+    if (isSharing) return;
     playSound('click');
     const refLink = `https://t.me/TonQashBot/app?startapp=${userId}`;
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent('Join me on TonQash and win TON!')}`;
@@ -1270,11 +1332,18 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
     // Open telegram share link
     window.open(shareUrl, '_blank');
 
-    if (shareCount < 3) {
-      const newCount = shareCount + 1;
-      setShareCount(newCount);
-      localStorage.setItem('tq_share_count', newCount.toString());
-    }
+    setIsSharing(true);
+    setTimeout(() => {
+      setShareCount(prev => {
+        if (prev < 3) {
+          const newCount = prev + 1;
+          localStorage.setItem('tq_share_count', newCount.toString());
+          return newCount;
+        }
+        return prev;
+      });
+      setIsSharing(false);
+    }, 7000);
   };
 
   const handleClaimShare = () => {
@@ -1451,8 +1520,8 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
             {t('comeBackLater').replace('{t}', formatTimeLeftShort(shareCooldownEnd))}
           </button>
         ) : shareCount < 3 ? (
-          <button onClick={handleShare} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl cartoon-button text-stroke transition-colors">
-            {t('taskShareBtn')}
+          <button onClick={handleShare} disabled={isSharing} className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 text-white font-bold py-3 rounded-xl cartoon-button text-stroke transition-colors">
+            {isSharing ? t('waitSec').replace('{s}', '7') : t('taskShareBtn')}
           </button>
         ) : (
           <button onClick={handleClaimShare} className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl cartoon-button text-stroke transition-colors animate-pulse-slow">
@@ -1596,7 +1665,7 @@ const ReferralsTab: React.FC<{ t: any, userId: string }> = ({ t, userId }) => {
   );
 }
 
-const ProfileTab: React.FC<{ username: string, balance: number, setBalance: React.Dispatch<React.SetStateAction<number>>, walletConnected: boolean, t: any, onDepositClick: () => void }> = ({ username, balance, setBalance, walletConnected, t, onDepositClick }) => {
+const ProfileTab: React.FC<{ username: string, photoUrl: string, balance: number, setBalance: React.Dispatch<React.SetStateAction<number>>, walletConnected: boolean, t: any, onDepositClick: () => void }> = ({ username, photoUrl, balance, setBalance, walletConnected, t, onDepositClick }) => {
   const [gamesPlayed, setGamesPlayed] = useState(0);
   const [userWins, setUserWins] = useState(0);
   const [totalWagered, setTotalWagered] = useState(0);
@@ -1620,8 +1689,12 @@ const ProfileTab: React.FC<{ username: string, balance: number, setBalance: Reac
         <div className="bg-[#1a1b26]/90 backdrop-blur-xl p-6 rounded-3xl border border-white/10 flex flex-col items-center text-center relative shadow-2xl">
           <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-indigo-500/20 to-transparent rounded-t-3xl pointer-events-none" />
           
-          <div className="absolute -top-12 w-24 h-24 bg-gradient-to-br from-indigo-400 to-purple-600 rounded-full border-4 border-[#1a1b26] flex items-center justify-center text-4xl font-bold shadow-xl z-20 text-white ring-4 ring-white/5">
-            {username.charAt(0).toUpperCase()}
+          <div className="absolute -top-12 w-24 h-24 bg-gradient-to-br from-indigo-400 to-purple-600 rounded-full border-4 border-[#1a1b26] flex items-center justify-center text-4xl font-bold shadow-xl z-20 text-white ring-4 ring-white/5 overflow-hidden">
+            {photoUrl ? (
+              <img src={photoUrl} alt={username} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            ) : (
+              username.charAt(0).toUpperCase()
+            )}
           </div>
           
           <div className="mt-10 flex items-center gap-2">
@@ -1650,7 +1723,7 @@ const ProfileTab: React.FC<{ username: string, balance: number, setBalance: Reac
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
             <span className="text-indigo-300/70 text-xs uppercase font-bold tracking-wider relative z-10">{t('walletBalance')}</span>
             <span className="text-4xl font-black text-white relative z-10 tracking-tight flex items-center justify-center gap-2">
-              {walletConnected ? balance.toFixed(2) : '0.00'} <TonIcon className="w-8 h-8" />
+              {balance.toFixed(2)} <TonIcon className="w-8 h-8" />
             </span>
           </div>
           
