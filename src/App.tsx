@@ -1292,7 +1292,7 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
     if (now < adsNextTime || adsWatched >= 30) return;
     playSound('click');
     if ((window as any).Adsgram) {
-      const AdController = (window as any).Adsgram.init({ blockId: "int-12373" });
+      const AdController = (window as any).Adsgram.init({ blockId: "int-27598" });
       AdController.show().then(() => {
         const newWatched = adsWatched + 1;
         setAdsWatched(newWatched);
