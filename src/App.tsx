@@ -140,7 +140,14 @@ export default function App() {
     }
   };
 
-  const [username, setUsername] = useState('TelegramUser');
+  const [username, setUsername] = useState(() => {
+    if (WebApp.initDataUnsafe?.user?.username) {
+      return '@' + WebApp.initDataUnsafe.user.username;
+    } else if (WebApp.initDataUnsafe?.user?.first_name) {
+      return WebApp.initDataUnsafe.user.first_name;
+    }
+    return 'TelegramUser';
+  });
   const [lang, setLang] = useState<Language>('en');
   const [muted, setMuted] = useState(getIsMuted());
   const [liveUsers, setLiveUsers] = useState(2453);
@@ -1273,8 +1280,7 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
   const handleClaimShare = () => {
     if (shareCount >= 3 && now >= shareCooldownEnd) {
       playSound('win');
-      const currentXp = parseInt(localStorage.getItem('tq_user_xp') || '0');
-      localStorage.setItem('tq_user_xp', (currentXp + 50).toString());
+      setBalance(prev => prev + 0.05);
       const cooldown = Date.now() + 86400000; // 24 hours
       setShareCooldownEnd(cooldown);
       localStorage.setItem('tq_share_cooldown_end', cooldown.toString());
@@ -1286,7 +1292,7 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
     if (now < adsNextTime || adsWatched >= 30) return;
     playSound('click');
     if ((window as any).Adsgram) {
-      const AdController = (window as any).Adsgram.init({ blockId: "int-27598" });
+      const AdController = (window as any).Adsgram.init({ blockId: "int-12373" });
       AdController.show().then(() => {
         const newWatched = adsWatched + 1;
         setAdsWatched(newWatched);
@@ -1304,8 +1310,7 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
 
         if (newWatched % 10 === 0) {
           playSound('win');
-          const currentXp = parseInt(localStorage.getItem('tq_user_xp') || '0');
-          localStorage.setItem('tq_user_xp', (currentXp + 100).toString());
+          setBalance(prev => prev + 0.05);
           myConfetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
         }
       }).catch(() => {
