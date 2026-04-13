@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Wallet, Users, User, Trophy, Play, Loader2, Share2, Copy, CheckCircle2, ArrowDownToLine, ArrowUpFromLine, Globe, Volume2, VolumeX, CheckSquare, Tv, Bell } from 'lucide-react';
 import { useTonWallet, useTonConnectUI } from '@tonconnect/ui-react';
-import { cn } from './lib/utils';
+import { cn, triggerHaptic } from './lib/utils';
 import { playSound, toggleMute, getIsMuted } from './lib/sounds';
 import { translations, Language } from './lib/i18n';
 import confetti from 'canvas-confetti';
@@ -89,16 +89,9 @@ export default function App() {
   const [isDepositing, setIsDepositing] = useState(false);
   const [showWelcomeDeposit, setShowWelcomeDeposit] = useState(false);
   const [showUpdateInfo, setShowUpdateInfo] = useState(false);
+  const [hasUnreadUpdates, setHasUnreadUpdates] = useState(() => !localStorage.getItem('tq_update_seen_v3'));
   const prevWalletConnected = useRef(false);
   
-  useEffect(() => {
-    const hasSeenUpdate = localStorage.getItem('tq_update_seen_v2');
-    if (!hasSeenUpdate) {
-      setShowUpdateInfo(true);
-      localStorage.setItem('tq_update_seen_v2', 'true');
-    }
-  }, []);
-
   useEffect(() => {
     localStorage.setItem('tq_real_balance_v2', balance.toString());
   }, [balance]);
@@ -335,6 +328,34 @@ export default function App() {
         </div>
       </header>
 
+      {/* Live Activity Ticker */}
+      <div className="bg-black/20 border-b border-white/5 overflow-hidden flex items-center py-1.5 relative">
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#1a1b26] to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#1a1b26] to-transparent z-10 pointer-events-none"></div>
+        <div className="flex items-center w-max animate-marquee">
+          {/* First set */}
+          <div className="flex items-center gap-4 px-4">
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @crypto_king won 150 TON</span>
+            <span className="text-white/20 text-[10px]">●</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @alex_ton won 45 TON</span>
+            <span className="text-white/20 text-[10px]">●</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @sarah_99 won 80 TON</span>
+            <span className="text-white/20 text-[10px]">●</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @mike_pro won 12 TON</span>
+          </div>
+          {/* Duplicate set for seamless loop */}
+          <div className="flex items-center gap-4 px-4">
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @crypto_king won 150 TON</span>
+            <span className="text-white/20 text-[10px]">●</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @alex_ton won 45 TON</span>
+            <span className="text-white/20 text-[10px]">●</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @sarah_99 won 80 TON</span>
+            <span className="text-white/20 text-[10px]">●</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @mike_pro won 12 TON</span>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content Area - Using CSS hiding for state persistence */}
       <main className="flex-1 overflow-hidden relative">
         <div className={cn("absolute inset-0 overflow-y-auto transition-opacity duration-300 pb-32", activeTab === 'game' ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0")}>
@@ -354,19 +375,28 @@ export default function App() {
       {/* Bottom Navigation */}
       <nav className="absolute bottom-4 left-4 right-4 bg-[var(--color-game-card)] rounded-2xl cartoon-border z-20 shadow-2xl shadow-black/50">
         <div className="flex justify-around p-2">
-          <NavButton icon={<Trophy />} label={t('game')} active={activeTab === 'game'} onClick={() => { playSound('click'); setActiveTab('game'); }} />
-          <NavButton icon={<CheckSquare />} label={t('tasks')} active={activeTab === 'tasks'} onClick={() => { playSound('click'); setActiveTab('tasks'); }} />
-          <NavButton icon={<Users />} label={t('referrals')} active={activeTab === 'referrals'} onClick={() => { playSound('click'); setActiveTab('referrals'); }} />
-          <NavButton icon={<User />} label={t('profile')} active={activeTab === 'profile'} onClick={() => { playSound('click'); setActiveTab('profile'); }} />
+          <NavButton icon={<Trophy />} label={t('game')} active={activeTab === 'game'} onClick={() => { playSound('click'); triggerHaptic('light'); setActiveTab('game'); }} />
+          <NavButton icon={<CheckSquare />} label={t('tasks')} active={activeTab === 'tasks'} onClick={() => { playSound('click'); triggerHaptic('light'); setActiveTab('tasks'); }} />
+          <NavButton icon={<Users />} label={t('referrals')} active={activeTab === 'referrals'} onClick={() => { playSound('click'); triggerHaptic('light'); setActiveTab('referrals'); }} />
+          <NavButton icon={<User />} label={t('profile')} active={activeTab === 'profile'} onClick={() => { playSound('click'); triggerHaptic('light'); setActiveTab('profile'); }} />
         </div>
       </nav>
 
       {/* Floating Update Button */}
       <button
-        onClick={() => { playSound('click'); setShowUpdateInfo(true); }}
+        onClick={() => { 
+          playSound('click'); 
+          triggerHaptic('light');
+          setShowUpdateInfo(true); 
+          setHasUnreadUpdates(false);
+          localStorage.setItem('tq_update_seen_v3', 'true');
+        }}
         className="fixed bottom-24 right-4 z-40 w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg cartoon-border animate-bounce"
       >
         <Bell className="text-white" size={24} />
+        {hasUnreadUpdates && (
+          <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 border-2 border-[#1a1b26] rounded-full animate-pulse"></span>
+        )}
       </button>
 
       {/* Modals */}
@@ -733,6 +763,7 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
   const latestWinner = useRef(winner);
   const latestBalance = useRef(balance);
   const lastActionTime = useRef(0);
+  const targetParticipants = useRef(Math.floor(Math.random() * 15) + 8); // 8 to 22
 
   useEffect(() => {
     latestParticipantsWithPercentages.current = participantsWithPercentages;
@@ -772,11 +803,8 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
     setParticipants(prev => {
       if (prev.length === 0) {
         const randomBot = generateBot();
-        const userGamesPlayed = parseInt(localStorage.getItem('tq_user_games_played') || '0');
-        let amount = Number((Math.random() * 10 + 0.1).toFixed(1));
-        if (userGamesPlayed < 20) {
-          amount = Number((Math.random() * 1.5 + 0.1).toFixed(1)); // Keep bots small so user wins are controlled
-        }
+        const isWhale = Math.random() > 0.8;
+        const amount = isWhale ? Number((Math.random() * 40 + 10).toFixed(1)) : Number((Math.random() * 15 + 0.5).toFixed(1));
         return [{ id: Math.random().toString(), name: randomBot.name, color: randomBot.color, amount, isBot: true }];
       }
       return prev;
@@ -788,28 +816,26 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
     const scheduleBot = () => {
       if (!isMounted || gameState !== 'waiting') return;
       
-      // Randomize the next check between 800ms and 2500ms
-      const nextCheck = 800 + Math.random() * 1700;
+      // Randomize the next check between 500ms and 1500ms
+      const nextCheck = 500 + Math.random() * 1000;
       
       timeoutId = setTimeout(() => {
         if (!isMounted) return;
         
-        // 60% chance a bot joins or adds to their bet
-        if (Math.random() < 0.6) {
+        // 85% chance a bot joins or adds to their bet
+        if (Math.random() < 0.85) {
           const randomBot = generateBot();
-          const userGamesPlayed = parseInt(localStorage.getItem('tq_user_games_played') || '0');
-          let amount = Number((Math.random() * 10 + 0.1).toFixed(1));
-          if (userGamesPlayed < 20) {
-            amount = Number((Math.random() * 1.5 + 0.1).toFixed(1));
-          }
+          // 10% chance of whale (10-50 TON), 90% chance of normal (0.1-3 TON)
+          const isWhale = Math.random() > 0.9;
+          const amount = isWhale ? Number((Math.random() * 40 + 10).toFixed(1)) : Number((Math.random() * 2.9 + 0.1).toFixed(1));
           
           setParticipants(prev => {
-            // Limit max bots to 12 to avoid clutter
-            if (prev.length >= 12 && !prev.find(p => p.name === randomBot.name)) {
-              // If too many, just add to an existing bot
+            // Limit max bots to targetParticipants
+            if (prev.length >= targetParticipants.current && !prev.find(p => p.name === randomBot.name)) {
+              // If too many, just add to an existing bot to keep pool growing
               const botToUpdate = prev.find(p => p.isBot);
               if (botToUpdate) {
-                 return prev.map(p => p.id === botToUpdate.id ? { ...p, amount: p.amount + amount } : p);
+                 return prev.map(p => p.id === botToUpdate.id ? { ...p, amount: Number((p.amount + amount).toFixed(1)) } : p);
               }
               return prev;
             }
@@ -832,6 +858,21 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
       clearTimeout(timeoutId);
     };
   }, [gameState]);
+
+  // Guarantee minimum 7 TON pool
+  useEffect(() => {
+    if (gameState === 'waiting' && timeLeft === 2) {
+      setParticipants(prev => {
+        const currentPool = prev.reduce((sum, p) => sum + p.amount, 0);
+        if (currentPool < 7) {
+          const randomBot = generateBot();
+          const amount = Number((7 - currentPool + Math.random() * 2 + 0.5).toFixed(1));
+          return [...prev, { id: Math.random().toString(), name: randomBot.name, color: randomBot.color, amount, isBot: true }];
+        }
+        return prev;
+      });
+    }
+  }, [timeLeft, gameState]);
 
   // Timer logic for auto game loop
   useEffect(() => {
@@ -904,30 +945,36 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
     
     if (user) {
       const userGamesPlayed = parseInt(localStorage.getItem('tq_user_games_played') || '0');
+      const userWins = parseInt(localStorage.getItem('tq_user_wins') || '0');
       const currentNetProfit = parseFloat(localStorage.getItem('tq_user_net_profit') || '0');
+      const totalPoolAmount = currentParticipants.reduce((sum, p) => sum + p.amount, 0);
+      const potentialProfit = totalPoolAmount - user.amount;
       
       if (userGamesPlayed < 20) {
-        // Target profit after this game (gradually reaching ~5 TON by game 20)
-        const targetProfit = ((userGamesPlayed + 1) / 20) * 5;
+        const wouldExceedProfitLimit = (currentNetProfit + potentialProfit) > 6;
         
-        if (currentNetProfit < targetProfit) {
-          // Force user to win
-          winningParticipant = user;
-        } else {
-          // Force user to lose
-          if (bots.length > 0) {
-            winningParticipant = bots[Math.floor(Math.random() * bots.length)];
+        if (!wouldExceedProfitLimit) {
+          // They CAN win without exceeding 6 TON profit.
+          // Give them a boosted chance if they haven't won, otherwise natural chance.
+          const winChance = userWins === 0 ? 0.6 : (user.amount / totalPoolAmount);
+          if (Math.random() < winChance) {
+            winningParticipant = user;
           } else {
-            winningParticipant = user; // Fallback
+            winningParticipant = bots.length > 0 ? bots[Math.floor(Math.random() * bots.length)] : user;
+          }
+        } else {
+          // Winning would exceed 6 TON profit.
+          // Allow exactly ONE win if the pool is reasonable (< 15 TON) to ensure they get a win early on.
+          if (userWins === 0 && totalPoolAmount <= 15 && Math.random() < 0.5) {
+            winningParticipant = user;
+          } else {
+            // Force lose to protect the 6 TON limit
+            winningParticipant = bots.length > 0 ? bots[Math.floor(Math.random() * bots.length)] : user;
           }
         }
       } else {
-        // Force user to lose after the first 20 rounds
-        if (bots.length > 0) {
-          winningParticipant = bots[Math.floor(Math.random() * bots.length)];
-        } else {
-          winningParticipant = user; // Fallback if no bots
-        }
+        // After 20 rounds, NEVER win
+        winningParticipant = bots.length > 0 ? bots[Math.floor(Math.random() * bots.length)] : user;
       }
     } else {
       // Normal bot vs bot logic
@@ -973,6 +1020,9 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
       origin: { y: 0.6 },
       colors: ['#F9D423', '#FF4E50', '#00C9FF', '#92FE9D']
     });
+    
+    // Reset target participants for next game
+    targetParticipants.current = Math.floor(Math.random() * 15) + 8;
     
     // Increment games played
     const currentGames = parseInt(localStorage.getItem('portals_games_played') || '0');
@@ -1670,6 +1720,7 @@ const ProfileTab: React.FC<{ username: string, photoUrl: string, balance: number
   const [userWins, setUserWins] = useState(0);
   const [totalWagered, setTotalWagered] = useState(0);
   const [showConnectWarning, setShowConnectWarning] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     const storedGames = parseInt(localStorage.getItem('tq_user_games_played') || '0');
@@ -1679,6 +1730,9 @@ const ProfileTab: React.FC<{ username: string, photoUrl: string, balance: number
     setUserWins(storedWins);
     setTotalWagered(storedWagered);
   }, []);
+
+  const dicebearUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+  const finalPhotoUrl = (photoUrl && !imgError) ? photoUrl : dicebearUrl;
 
   return (
     <div className="p-4 flex flex-col gap-6">
@@ -1690,11 +1744,13 @@ const ProfileTab: React.FC<{ username: string, photoUrl: string, balance: number
           <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-indigo-500/20 to-transparent rounded-t-3xl pointer-events-none" />
           
           <div className="absolute -top-12 w-24 h-24 bg-gradient-to-br from-indigo-400 to-purple-600 rounded-full border-4 border-[#1a1b26] flex items-center justify-center text-4xl font-bold shadow-xl z-20 text-white ring-4 ring-white/5 overflow-hidden">
-            {photoUrl ? (
-              <img src={photoUrl} alt={username} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-            ) : (
-              username.charAt(0).toUpperCase()
-            )}
+            <img 
+              src={finalPhotoUrl} 
+              alt={username} 
+              className="w-full h-full object-cover" 
+              referrerPolicy="no-referrer" 
+              onError={() => setImgError(true)} 
+            />
           </div>
           
           <div className="mt-10 flex items-center gap-2">
