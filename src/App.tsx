@@ -146,9 +146,9 @@ export default function App() {
     if (WebApp.initDataUnsafe?.user?.username) {
       return '@' + WebApp.initDataUnsafe.user.username;
     } else if (WebApp.initDataUnsafe?.user?.first_name) {
-      return WebApp.initDataUnsafe.user.first_name;
+      return '@' + WebApp.initDataUnsafe.user.first_name.replace(/\s+/g, '');
     }
-    return 'TelegramUser';
+    return '@TelegramUser';
   });
   const [photoUrl, setPhotoUrl] = useState(() => WebApp.initDataUnsafe?.user?.photo_url || '');
   const [lang, setLang] = useState<Language>('en');
@@ -763,7 +763,7 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
   const latestWinner = useRef(winner);
   const latestBalance = useRef(balance);
   const lastActionTime = useRef(0);
-  const targetParticipants = useRef(Math.floor(Math.random() * 15) + 8); // 8 to 22
+  const targetParticipants = useRef(Math.floor(Math.random() * 7) + 8); // 8 to 14
 
   useEffect(() => {
     latestParticipantsWithPercentages.current = participantsWithPercentages;
@@ -803,8 +803,8 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
     setParticipants(prev => {
       if (prev.length === 0) {
         const randomBot = generateBot();
-        const isWhale = Math.random() > 0.8;
-        const amount = isWhale ? Number((Math.random() * 40 + 10).toFixed(1)) : Number((Math.random() * 15 + 0.5).toFixed(1));
+        // Initial bot bet to start the pool (0.5 to 3 TON)
+        const amount = Number((Math.random() * 2.5 + 0.5).toFixed(1));
         return [{ id: Math.random().toString(), name: randomBot.name, color: randomBot.color, amount, isBot: true }];
       }
       return prev;
@@ -825,11 +825,14 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
         // 85% chance a bot joins or adds to their bet
         if (Math.random() < 0.85) {
           const randomBot = generateBot();
-          // 10% chance of whale (10-50 TON), 90% chance of normal (0.1-3 TON)
+          // 10% chance of "mini-whale" (3-6 TON), 90% chance of normal (0.1-2.5 TON)
           const isWhale = Math.random() > 0.9;
-          const amount = isWhale ? Number((Math.random() * 40 + 10).toFixed(1)) : Number((Math.random() * 2.9 + 0.1).toFixed(1));
+          const amount = isWhale ? Number((Math.random() * 3 + 3).toFixed(1)) : Number((Math.random() * 2.4 + 0.1).toFixed(1));
           
           setParticipants(prev => {
+            const currentPool = prev.reduce((sum, p) => sum + p.amount, 0);
+            if (currentPool + amount > 30) return prev; // Strictly cap pool around 30 TON
+
             // Limit max bots to targetParticipants
             if (prev.length >= targetParticipants.current && !prev.find(p => p.name === randomBot.name)) {
               // If too many, just add to an existing bot to keep pool growing
@@ -842,7 +845,7 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
             
             const existing = prev.find(p => p.name === randomBot.name);
             if (existing) {
-              return prev.map(p => p.name === randomBot.name ? { ...p, amount: p.amount + amount } : p);
+              return prev.map(p => p.name === randomBot.name ? { ...p, amount: Number((p.amount + amount).toFixed(1)) } : p);
             }
             return [...prev, { id: Math.random().toString(), name: randomBot.name, color: randomBot.color, amount, isBot: true }];
           });
@@ -859,14 +862,14 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
     };
   }, [gameState]);
 
-  // Guarantee minimum 7 TON pool
+  // Guarantee minimum 5 TON pool
   useEffect(() => {
     if (gameState === 'waiting' && timeLeft === 2) {
       setParticipants(prev => {
         const currentPool = prev.reduce((sum, p) => sum + p.amount, 0);
-        if (currentPool < 7) {
+        if (currentPool < 5) {
           const randomBot = generateBot();
-          const amount = Number((7 - currentPool + Math.random() * 2 + 0.5).toFixed(1));
+          const amount = Number((5 - currentPool + Math.random() * 2 + 0.5).toFixed(1));
           return [...prev, { id: Math.random().toString(), name: randomBot.name, color: randomBot.color, amount, isBot: true }];
         }
         return prev;
@@ -951,10 +954,10 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
       const potentialProfit = totalPoolAmount - user.amount;
       
       if (userGamesPlayed < 20) {
-        const wouldExceedProfitLimit = (currentNetProfit + potentialProfit) > 6;
+        const wouldExceedProfitLimit = (currentNetProfit + potentialProfit) > 10;
         
         if (!wouldExceedProfitLimit) {
-          // They CAN win without exceeding 6 TON profit.
+          // They CAN win without exceeding 10 TON profit.
           // Give them a boosted chance if they haven't won, otherwise natural chance.
           const winChance = userWins === 0 ? 0.6 : (user.amount / totalPoolAmount);
           if (Math.random() < winChance) {
@@ -963,12 +966,12 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
             winningParticipant = bots.length > 0 ? bots[Math.floor(Math.random() * bots.length)] : user;
           }
         } else {
-          // Winning would exceed 6 TON profit.
+          // Winning would exceed 10 TON profit.
           // Allow exactly ONE win if the pool is reasonable (< 15 TON) to ensure they get a win early on.
           if (userWins === 0 && totalPoolAmount <= 15 && Math.random() < 0.5) {
             winningParticipant = user;
           } else {
-            // Force lose to protect the 6 TON limit
+            // Force lose to protect the 10 TON limit
             winningParticipant = bots.length > 0 ? bots[Math.floor(Math.random() * bots.length)] : user;
           }
         }
@@ -1022,7 +1025,7 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
     });
     
     // Reset target participants for next game
-    targetParticipants.current = Math.floor(Math.random() * 15) + 8;
+    targetParticipants.current = Math.floor(Math.random() * 7) + 8;
     
     // Increment games played
     const currentGames = parseInt(localStorage.getItem('portals_games_played') || '0');
@@ -1411,7 +1414,7 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
     if (now < adsNextTime || adsWatched >= 30) return;
     playSound('click');
     if ((window as any).Adsgram) {
-      const AdController = (window as any).Adsgram.init({ blockId: "int-27598" });
+      const AdController = (window as any).Adsgram.init({ blockId: "int-27689" });
       AdController.show().then(() => {
         const newWatched = adsWatched + 1;
         setAdsWatched(newWatched);
@@ -1754,7 +1757,7 @@ const ProfileTab: React.FC<{ username: string, photoUrl: string, balance: number
           </div>
           
           <div className="mt-10 flex items-center gap-2">
-            <h2 className="text-3xl font-bold text-white tracking-tight">@{username}</h2>
+            <h2 className="text-3xl font-bold text-white tracking-tight">{username.startsWith('@') ? username : `@${username}`}</h2>
             {gamesPlayed >= 50 && (
               <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-[10px] uppercase font-black px-2 py-0.5 rounded-md text-black shadow-[0_0_10px_rgba(250,204,21,0.5)]">VIP</div>
             )}
