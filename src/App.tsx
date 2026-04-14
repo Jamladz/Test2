@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Wallet, Users, User, Trophy, Play, Loader2, Share2, Copy, CheckCircle2, ArrowDownToLine, ArrowUpFromLine, Globe, Volume2, VolumeX, CheckSquare, Tv, Bell } from 'lucide-react';
+import { Wallet, Users, User, Trophy, Play, Loader2, Share2, Copy, CheckCircle2, ArrowDownToLine, ArrowUpFromLine, Globe, Volume2, VolumeX, CheckSquare, Tv, Bell, Star, Crown } from 'lucide-react';
 import { useTonWallet, useTonConnectUI } from '@tonconnect/ui-react';
 import { cn, triggerHaptic } from './lib/utils';
 import { playSound, toggleMute, getIsMuted } from './lib/sounds';
@@ -311,7 +311,7 @@ export default function App() {
             )}
           >
             <Wallet size={18} className="drop-shadow-md" />
-            {walletConnected || balance > 0 ? `${balance.toFixed(2)} TON` : t('connect')}
+            {walletConnected || balance > 0 ? <span className="flex items-center gap-1">{balance.toFixed(2)} <TonIcon className="w-4 h-4" /></span> : t('connect')}
           </button>
         </div>
         
@@ -336,23 +336,23 @@ export default function App() {
         <div className="flex items-center w-max animate-marquee">
           {/* First set */}
           <div className="flex items-center gap-4 px-4">
-            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @crypto_king won 150 TON</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @crypto_king won 150 <TonIcon className="w-3 h-3 inline-block" /></span>
             <span className="text-white/20 text-[10px]">●</span>
-            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @alex_ton won 45 TON</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @alex_ton won 45 <TonIcon className="w-3 h-3 inline-block" /></span>
             <span className="text-white/20 text-[10px]">●</span>
-            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @sarah_99 won 80 TON</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @sarah_99 won 80 <TonIcon className="w-3 h-3 inline-block" /></span>
             <span className="text-white/20 text-[10px]">●</span>
-            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @mike_pro won 12 TON</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @mike_pro won 12 <TonIcon className="w-3 h-3 inline-block" /></span>
           </div>
           {/* Duplicate set for seamless loop */}
           <div className="flex items-center gap-4 px-4">
-            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @crypto_king won 150 TON</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @crypto_king won 150 <TonIcon className="w-3 h-3 inline-block" /></span>
             <span className="text-white/20 text-[10px]">●</span>
-            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @alex_ton won 45 TON</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @alex_ton won 45 <TonIcon className="w-3 h-3 inline-block" /></span>
             <span className="text-white/20 text-[10px]">●</span>
-            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @sarah_99 won 80 TON</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @sarah_99 won 80 <TonIcon className="w-3 h-3 inline-block" /></span>
             <span className="text-white/20 text-[10px]">●</span>
-            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @mike_pro won 12 TON</span>
+            <span className="flex items-center gap-1 text-xs text-indigo-200 font-medium"><Trophy size={12} className="text-yellow-400"/> @mike_pro won 12 <TonIcon className="w-3 h-3 inline-block" /></span>
           </div>
         </div>
       </div>
@@ -999,7 +999,7 @@ const Game2Tab: React.FC<{ walletConnected: boolean, balance: number, setBalance
           <motion.img 
             src="https://i.suar.me/5Pm59/l" 
             alt="Bear" 
-            className="absolute inset-0 m-auto opacity-20 w-24 h-24 sm:w-32 sm:h-32 object-contain pointer-events-none mix-blend-overlay"
+            className="absolute inset-0 m-auto opacity-60 w-24 h-24 sm:w-32 sm:h-32 object-contain pointer-events-none drop-shadow-2xl"
             animate={{ scale: Math.max(0.5, redPercentage / 50) }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           />
@@ -1022,7 +1022,7 @@ const Game2Tab: React.FC<{ walletConnected: boolean, balance: number, setBalance
           <motion.img 
             src="https://i.suar.me/ngz9E/l" 
             alt="Bull" 
-            className="absolute inset-0 m-auto opacity-20 w-24 h-24 sm:w-32 sm:h-32 object-contain pointer-events-none mix-blend-overlay"
+            className="absolute inset-0 m-auto opacity-60 w-24 h-24 sm:w-32 sm:h-32 object-contain pointer-events-none drop-shadow-2xl"
             animate={{ scale: Math.max(0.5, greenPercentage / 50) }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           />
@@ -1042,7 +1042,7 @@ const Game2Tab: React.FC<{ walletConnected: boolean, balance: number, setBalance
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10">
           <div className="bg-[#1a1b26] text-white text-[10px] font-black px-3 py-1 rounded-full mb-1 border border-white/10 shadow-lg flex items-center gap-1">
             <Globe className="w-3 h-3 text-indigo-400" />
-            {totalPool.toFixed(1)} TON
+            {totalPool.toFixed(1)} <TonIcon className="w-3 h-3 inline-block" />
           </div>
           <div className="w-14 h-14 bg-[#1a1b26] rounded-full border-4 border-white/10 flex items-center justify-center shadow-2xl">
             <span className="text-white font-black italic text-lg bg-clip-text text-transparent bg-gradient-to-br from-gray-100 to-gray-500">VS</span>
@@ -1123,7 +1123,7 @@ const Game2Tab: React.FC<{ walletConnected: boolean, balance: number, setBalance
               <img src="https://i.suar.me/5Pm59/l" alt="Bear" className="w-6 h-6 object-contain" />
               <span>Bet Bears</span>
             </button>
-            <div className="text-center text-sm font-bold text-red-400">{redTotal.toFixed(1)} TON</div>
+            <div className="text-center text-sm font-bold text-red-400 flex items-center justify-center gap-1">{redTotal.toFixed(1)} <TonIcon className="w-3 h-3 inline-block" /></div>
           </div>
           <div className="flex-1 flex flex-col gap-2">
             <button 
@@ -1134,7 +1134,7 @@ const Game2Tab: React.FC<{ walletConnected: boolean, balance: number, setBalance
               <img src="https://i.suar.me/ngz9E/l" alt="Bull" className="w-6 h-6 object-contain" />
               <span>Bet Bulls</span>
             </button>
-            <div className="text-center text-sm font-bold text-green-400">{greenTotal.toFixed(1)} TON</div>
+            <div className="text-center text-sm font-bold text-green-400 flex items-center justify-center gap-1">{greenTotal.toFixed(1)} <TonIcon className="w-3 h-3 inline-block" /></div>
           </div>
         </div>
         {!walletConnected && (
@@ -1156,7 +1156,7 @@ const Game2Tab: React.FC<{ walletConnected: boolean, balance: number, setBalance
             {userBet?.color === 'red' && (
               <div className="flex justify-between items-center p-2 bg-red-500/20 rounded-lg mb-2 border border-red-500/40 shadow-sm">
                 <span className="font-black text-xs text-white">{username}</span>
-                <span className="font-black text-xs text-red-300">{userBet.amount} TON</span>
+                <span className="font-black text-xs text-red-300 flex items-center gap-1">{userBet.amount} <TonIcon className="w-3 h-3 inline-block" /></span>
               </div>
             )}
             <AnimatePresence initial={false}>
@@ -1168,7 +1168,7 @@ const Game2Tab: React.FC<{ walletConnected: boolean, balance: number, setBalance
                   className="flex justify-between items-center p-2 border-b border-red-500/10 last:border-0"
                 >
                   <span className="font-medium text-xs text-white/70 truncate pr-2">{p.name}</span>
-                  <span className="font-bold text-xs text-red-400 whitespace-nowrap">{p.amount} TON</span>
+                  <span className="font-bold text-xs text-red-400 whitespace-nowrap flex items-center gap-1">{p.amount} <TonIcon className="w-3 h-3 inline-block" /></span>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -1187,7 +1187,7 @@ const Game2Tab: React.FC<{ walletConnected: boolean, balance: number, setBalance
             {userBet?.color === 'green' && (
               <div className="flex justify-between items-center p-2 bg-green-500/20 rounded-lg mb-2 border border-green-500/40 shadow-sm">
                 <span className="font-black text-xs text-white">{username}</span>
-                <span className="font-black text-xs text-green-300">{userBet.amount} TON</span>
+                <span className="font-black text-xs text-green-300 flex items-center gap-1">{userBet.amount} <TonIcon className="w-3 h-3 inline-block" /></span>
               </div>
             )}
             <AnimatePresence initial={false}>
@@ -1199,7 +1199,7 @@ const Game2Tab: React.FC<{ walletConnected: boolean, balance: number, setBalance
                   className="flex justify-between items-center p-2 border-b border-green-500/10 last:border-0"
                 >
                   <span className="font-medium text-xs text-white/70 truncate pr-2">{p.name}</span>
-                  <span className="font-bold text-xs text-green-400 whitespace-nowrap">{p.amount} TON</span>
+                  <span className="font-bold text-xs text-green-400 whitespace-nowrap flex items-center gap-1">{p.amount} <TonIcon className="w-3 h-3 inline-block" /></span>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -1571,9 +1571,14 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
           <motion.div 
             animate={{ x: [200, -300] }}
             transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
-            className="absolute whitespace-nowrap text-xs font-bold text-white/80"
+            className="absolute whitespace-nowrap text-xs font-bold text-white/80 flex items-center gap-2"
           >
-            {recentWins.map(w => w.text).join(' • ')}
+            {recentWins.map((w, i) => (
+              <span key={i} className="flex items-center gap-1">
+                {w.text.split(' TON ')[0]} <TonIcon className="w-3 h-3 inline-block" /> {w.text.split(' TON ')[1]}
+                {i < recentWins.length - 1 && <span className="mx-1">•</span>}
+              </span>
+            ))}
           </motion.div>
         </div>
       </div>
@@ -1747,9 +1752,9 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="p-3 border-b border-white/5 last:border-0 font-bold text-sm text-green-400"
+                className="p-3 border-b border-white/5 last:border-0 font-bold text-sm text-green-400 flex items-center gap-1"
               >
-                {win.text}
+                {win.text.split(' TON ')[0]} <TonIcon className="w-3 h-3 inline-block" /> {win.text.split(' TON ')[1]}
               </motion.div>
             ))}
           </AnimatePresence>
@@ -1767,9 +1772,9 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="p-3 border-b border-white/5 last:border-0 font-bold text-sm text-blue-400"
+                className="p-3 border-b border-white/5 last:border-0 font-bold text-sm text-blue-400 flex items-center gap-1"
               >
-                {withdrawal.text}
+                {withdrawal.text.split(' TON ')[0]} <TonIcon className="w-3 h-3 inline-block" /> {withdrawal.text.split(' TON ')[1]}
               </motion.div>
             ))}
           </AnimatePresence>
@@ -1831,6 +1836,12 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
   const [adsNextTime, setAdsNextTime] = useState(() => parseInt(localStorage.getItem('tq_ads_next_time') || '0'));
   const [adsResetTime, setAdsResetTime] = useState(() => parseInt(localStorage.getItem('tq_ads_reset_time') || '0'));
   
+  // Premium Subscription State
+  const [premiumSubEnd, setPremiumSubEnd] = useState(() => parseInt(localStorage.getItem('tq_premium_sub_end') || '0'));
+  const [premiumAdsWatched, setPremiumAdsWatched] = useState(() => parseInt(localStorage.getItem('tq_premium_ads_watched') || '0'));
+  const [premiumAdsResetTime, setPremiumAdsResetTime] = useState(() => parseInt(localStorage.getItem('tq_premium_ads_reset_time') || '0'));
+  const [premiumAdsNextTime, setPremiumAdsNextTime] = useState(() => parseInt(localStorage.getItem('tq_premium_ads_next_time') || '0'));
+
   const [hasJoinedPepe, setHasJoinedPepe] = useState(() => localStorage.getItem('tq_joined_pepe') === 'true');
   const [hasJoinedGift, setHasJoinedGift] = useState(() => localStorage.getItem('tq_joined_gift') === 'true');
   
@@ -1860,6 +1871,16 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
       localStorage.setItem('tq_ads_reset_time', '0');
     }
   }, [now, adsResetTime]);
+
+  // Reset Premium Ads
+  useEffect(() => {
+    if (premiumAdsResetTime > 0 && now >= premiumAdsResetTime) {
+      setPremiumAdsWatched(0);
+      setPremiumAdsResetTime(0);
+      localStorage.setItem('tq_premium_ads_watched', '0');
+      localStorage.setItem('tq_premium_ads_reset_time', '0');
+    }
+  }, [now, premiumAdsResetTime]);
 
   const handleShare = () => {
     if (isSharing || verifyingShare) return;
@@ -1891,6 +1912,7 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
           });
         } else {
           // User returned too quickly, likely didn't share
+          // @ts-ignore
           const tg = window.Telegram?.WebApp;
           if (tg && tg.showAlert) {
             tg.showAlert("You must actually share the link to get the reward!");
@@ -1977,6 +1999,52 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
     }
   };
 
+  const handleSubscribePremium = () => {
+    if (balance >= 1) {
+      playSound('win');
+      setBalance(balance - 1);
+      const subEnd = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
+      setPremiumSubEnd(subEnd);
+      localStorage.setItem('tq_premium_sub_end', subEnd.toString());
+      myConfetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+    } else {
+      alert('Insufficient balance');
+    }
+  };
+
+  const handleWatchPremiumAd = () => {
+    if (now < premiumAdsNextTime || premiumAdsWatched >= 5 || now >= premiumSubEnd) return;
+    playSound('click');
+    if ((window as any).Adsgram) {
+      const AdController = (window as any).Adsgram.init({ blockId: "int-27598" });
+      AdController.show().then(() => {
+        const newWatched = premiumAdsWatched + 1;
+        setPremiumAdsWatched(newWatched);
+        localStorage.setItem('tq_premium_ads_watched', newWatched.toString());
+
+        const nextTime = Date.now() + 20000; // 20 seconds cooldown
+        setPremiumAdsNextTime(nextTime);
+        localStorage.setItem('tq_premium_ads_next_time', nextTime.toString());
+
+        if (premiumAdsResetTime === 0 || now >= premiumAdsResetTime) {
+          const resetTime = Date.now() + 86400000; // 24 hours from first ad
+          setPremiumAdsResetTime(resetTime);
+          localStorage.setItem('tq_premium_ads_reset_time', resetTime.toString());
+        }
+
+        if (newWatched === 5) {
+          playSound('win');
+          setBalance(prev => prev + 0.5);
+          myConfetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+        }
+      }).catch(() => {
+        // Ad skipped or failed
+      });
+    } else {
+      alert('Ads system is loading, please try again later.');
+    }
+  };
+
   const handleJoinPepe = () => {
     if (balance >= 1) {
       playSound('win');
@@ -2038,6 +2106,62 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
   return (
     <div className="p-4 flex flex-col gap-4">
       <h2 className="text-2xl font-bold text-stroke mb-2">{t('tasks')}</h2>
+
+      {/* Premium Subscription Task */}
+      <div className="bg-[var(--color-game-card)] rounded-2xl cartoon-border p-4 flex flex-col gap-3 relative overflow-hidden border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+        <div className="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] font-bold px-3 py-1 rounded-bl-xl z-10 cartoon-border border-t-0 border-r-0 flex items-center gap-1">
+          <Star size={10} className="fill-black" /> PREMIUM
+        </div>
+        <div className="flex items-start gap-3 mt-2">
+          <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg cartoon-border">
+            <Crown size={32} className="text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-white text-lg leading-tight">Weekly Premium</h3>
+            <p className="text-[var(--color-tg-muted)] text-xs mt-1">
+              {now < premiumSubEnd 
+                ? <span className="flex items-center gap-1">Watch 5 ads daily to earn 0.5 <TonIcon className="w-3 h-3 inline-block" />!</span> 
+                : <span className="flex items-center gap-1">Subscribe for 1 <TonIcon className="w-3 h-3 inline-block" /> to unlock daily 0.5 <TonIcon className="w-3 h-3 inline-block" /> rewards for a week!</span>}
+            </p>
+          </div>
+        </div>
+
+        {now < premiumSubEnd ? (
+          <>
+            <div className="flex items-center justify-between bg-black/20 rounded-xl p-2 cartoon-border">
+              <span className="text-[10px] font-bold text-[var(--color-tg-muted)] uppercase">Daily Progress</span>
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className={cn("w-4 h-2 rounded-full transition-colors", i <= premiumAdsWatched ? "bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]" : "bg-white/10")} />
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10px] font-bold text-[var(--color-tg-muted)] uppercase">Sub Ends In</span>
+              <span className="text-xs font-bold text-yellow-400">{formatTimeLeft(premiumSubEnd)}</span>
+            </div>
+            
+            {premiumAdsWatched >= 5 ? (
+              <button disabled className="w-full bg-black/30 text-[var(--color-tg-muted)] font-bold py-3 rounded-xl cartoon-border transition-colors">
+                {t('comeBackLater').replace('{t}', formatTimeLeftShort(premiumAdsResetTime))}
+              </button>
+            ) : now < premiumAdsNextTime ? (
+              <button disabled className="w-full bg-black/30 text-[var(--color-tg-muted)] font-bold py-3 rounded-xl cartoon-border transition-colors">
+                {t('waitSec').replace('{s}', Math.ceil((premiumAdsNextTime - now) / 1000).toString())}
+              </button>
+            ) : (
+              <button onClick={handleWatchPremiumAd} className="w-full bg-gradient-to-b from-yellow-500 to-yellow-700 text-white font-bold py-3 rounded-xl cartoon-button text-stroke transition-colors">
+                Watch Premium Ad
+              </button>
+            )}
+          </>
+        ) : (
+          <button onClick={handleSubscribePremium} className="w-full bg-gradient-to-b from-yellow-500 to-yellow-700 text-white font-bold py-3 rounded-xl cartoon-button text-stroke transition-colors flex items-center justify-center gap-2">
+            Subscribe for 1 <TonIcon className="w-5 h-5" />
+          </button>
+        )}
+      </div>
 
       {/* Task 0: Adsgram */}
       <div className="bg-[var(--color-game-card)] rounded-2xl cartoon-border p-4 flex flex-col gap-3 relative overflow-hidden">
