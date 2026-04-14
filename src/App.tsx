@@ -78,6 +78,7 @@ export default function App() {
   const [showEarnPopup, setShowEarnPopup] = useState(false);
   
   const [activeTab, setActiveTab] = useState<'game' | 'referrals' | 'profile' | 'tasks'>('game');
+  const [activeGame, setActiveGame] = useState<'game1' | 'game2'>('game2');
   const wallet = useTonWallet();
   const [tonConnectUI] = useTonConnectUI();
   const walletConnected = !!wallet;
@@ -358,16 +359,36 @@ export default function App() {
 
       {/* Main Content Area - Using CSS hiding for state persistence */}
       <main className="flex-1 overflow-hidden relative">
-        <div className={cn("absolute inset-0 overflow-y-auto transition-opacity duration-300 pb-32", activeTab === 'game' ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0")}>
-          <GameTab walletConnected={walletConnected} balance={balance} setBalance={setBalance} username={username} t={t} />
+        <div className={cn("absolute inset-0 overflow-y-auto overflow-x-hidden transition-opacity duration-300 pb-32", activeTab === 'game' ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0")}>
+          <div className="sticky top-0 z-50 bg-[#0f1016]/90 backdrop-blur-md px-2 pt-2 pb-1 border-b border-white/5 shadow-lg">
+            <div className="flex bg-white/5 rounded-lg p-1 border border-white/10 max-w-md mx-auto">
+              <button 
+                onClick={() => setActiveGame('game2')}
+                className={cn("flex-1 py-1.5 rounded-md font-bold text-xs transition-all", activeGame === 'game2' ? "bg-indigo-600 text-white shadow-lg" : "text-white/50 hover:text-white/80")}
+              >
+                Game 2
+              </button>
+              <button 
+                onClick={() => setActiveGame('game1')}
+                className={cn("flex-1 py-1.5 rounded-md font-bold text-xs transition-all", activeGame === 'game1' ? "bg-indigo-600 text-white shadow-lg" : "text-white/50 hover:text-white/80")}
+              >
+                Game 1
+              </button>
+            </div>
+          </div>
+          {activeGame === 'game1' ? (
+            <GameTab walletConnected={walletConnected} balance={balance} setBalance={setBalance} username={username} t={t} />
+          ) : (
+            <Game2Tab walletConnected={walletConnected} balance={balance} setBalance={setBalance} username={username} t={t} />
+          )}
         </div>
-        <div className={cn("absolute inset-0 overflow-y-auto transition-opacity duration-300 pb-32", activeTab === 'tasks' ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0")}>
+        <div className={cn("absolute inset-0 overflow-y-auto overflow-x-hidden transition-opacity duration-300 pb-32", activeTab === 'tasks' ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0")}>
           <TasksTab t={t} balance={balance} setBalance={setBalance} userId={userId} />
         </div>
-        <div className={cn("absolute inset-0 overflow-y-auto transition-opacity duration-300 pb-32", activeTab === 'referrals' ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0")}>
+        <div className={cn("absolute inset-0 overflow-y-auto overflow-x-hidden transition-opacity duration-300 pb-32", activeTab === 'referrals' ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0")}>
           <ReferralsTab t={t} userId={userId} />
         </div>
-        <div className={cn("absolute inset-0 overflow-y-auto transition-opacity duration-300 pb-32", activeTab === 'profile' ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0")}>
+        <div className={cn("absolute inset-0 overflow-y-auto overflow-x-hidden transition-opacity duration-300 pb-32", activeTab === 'profile' ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0")}>
           <ProfileTab username={username} photoUrl={photoUrl} balance={balance} setBalance={setBalance} walletConnected={walletConnected} t={t} onDepositClick={() => setShowDeposit(true)} />
         </div>
       </main>
@@ -726,6 +747,468 @@ function NavButton({ icon, label, active, onClick }: { icon: React.ReactNode, la
     </button>
   );
 }
+
+const Game2Tab: React.FC<{ walletConnected: boolean, balance: number, setBalance: React.Dispatch<React.SetStateAction<number>>, username: string, t: any }> = ({ walletConnected, balance, setBalance, username, t }) => {
+  const [gameState, setGameState] = useState<GameState>('waiting');
+  const [timeLeft, setTimeLeft] = useState(15);
+  const [redPool, setRedPool] = useState<Participant[]>([]);
+  const [greenPool, setGreenPool] = useState<Participant[]>([]);
+  const [userBet, setUserBet] = useState<{ color: 'red' | 'green', amount: number } | null>(null);
+  const [winner, setWinner] = useState<'red' | 'green' | null>(null);
+  const [betInput, setBetInput] = useState<string>(() => localStorage.getItem('game2_bet_amount') || '1');
+  const buyAmount = Math.max(0.1, parseFloat(betInput) || 0.1);
+  const [history, setHistory] = useState<('red' | 'green')[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('game2_history') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  
+  const redTotal = redPool.reduce((s, p) => s + p.amount, 0) + (userBet?.color === 'red' ? userBet.amount : 0);
+  const greenTotal = greenPool.reduce((s, p) => s + p.amount, 0) + (userBet?.color === 'green' ? userBet.amount : 0);
+  const totalPool = redTotal + greenTotal;
+
+  const redPercentage = totalPool === 0 ? 50 : (redTotal / totalPool) * 100;
+  const greenPercentage = totalPool === 0 ? 50 : (greenTotal / totalPool) * 100;
+
+  // Bot generation
+  useEffect(() => {
+    if (gameState !== 'waiting') return;
+
+    let timeoutId: NodeJS.Timeout;
+    let isMounted = true;
+
+    const scheduleBot = () => {
+      if (!isMounted || gameState !== 'waiting') return;
+      
+      // Extremely fast bot joining to reach 30-50 bots per color (60-100 total) in 15 seconds
+      const nextCheck = 100 + Math.random() * 150;
+      
+      timeoutId = setTimeout(() => {
+        if (!isMounted) return;
+        
+        // Add 1 to 3 bots per tick
+        const botsToAdd = Math.floor(Math.random() * 3) + 1;
+        
+        for (let i = 0; i < botsToAdd; i++) {
+          const randomBot = generateBot();
+          
+          // Realistic distribution: mostly small, some medium, few large
+          const rand = Math.random();
+          let amount = 0;
+          if (rand < 0.7) amount = Number((Math.random() * 0.9 + 0.1).toFixed(1)); // 0.1 - 1.0
+          else if (rand < 0.95) amount = Number((Math.random() * 1.5 + 1.0).toFixed(1)); // 1.0 - 2.5
+          else amount = Number((Math.random() * 1.5 + 2.5).toFixed(1)); // 2.5 - 4.0
+          
+          const color = Math.random() > 0.5 ? 'red' : 'green';
+          
+          if (color === 'red') {
+            setRedPool(prev => [{ id: Math.random().toString(), name: randomBot.name, color: '#ef4444', amount, isBot: true }, ...prev]);
+          } else {
+            setGreenPool(prev => [{ id: Math.random().toString(), name: randomBot.name, color: '#22c55e', amount, isBot: true }, ...prev]);
+          }
+        }
+        scheduleBot();
+      }, nextCheck);
+    };
+
+    scheduleBot();
+    return () => { isMounted = false; clearTimeout(timeoutId); };
+  }, [gameState, timeLeft]);
+
+  // Timer
+  useEffect(() => {
+    if (gameState !== 'waiting') return;
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev > 0) {
+          if (prev <= 4) playSound('tick');
+          return prev - 1;
+        }
+        return 0;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [gameState]);
+
+  useEffect(() => {
+    if (timeLeft === 0 && gameState === 'waiting') {
+      startGame();
+    }
+  }, [timeLeft, gameState]);
+
+  const startGame = () => {
+    let finalRedPool = [...redPool];
+    let finalGreenPool = [...greenPool];
+    let finalRedTotal = redTotal;
+    let finalGreenTotal = greenTotal;
+
+    let targetWinner: 'red' | 'green';
+
+    const userGamesPlayed = parseInt(localStorage.getItem('game2_games_played') || '0');
+    const currentNetProfit = parseFloat(localStorage.getItem('game2_net_profit') || '0');
+
+    if (userBet) {
+      if (userGamesPlayed < 4) {
+        targetWinner = userBet.color;
+        
+        let losingTotal = targetWinner === 'red' ? finalGreenTotal : finalRedTotal;
+        let winningTotal = targetWinner === 'red' ? finalRedTotal : finalGreenTotal;
+        
+        if (winningTotal <= losingTotal) {
+            const diff = losingTotal - winningTotal;
+            const amountToAdd = diff + Math.random() * 2 + 0.1;
+            winningTotal += amountToAdd;
+            
+            const bot = generateBot();
+            if (targetWinner === 'red') {
+                finalRedPool.unshift({ id: Math.random().toString(), name: bot.name, color: '#ef4444', amount: Number(amountToAdd.toFixed(1)), isBot: true });
+                finalRedTotal += amountToAdd;
+            } else {
+                finalGreenPool.unshift({ id: Math.random().toString(), name: bot.name, color: '#22c55e', amount: Number(amountToAdd.toFixed(1)), isBot: true });
+                finalGreenTotal += amountToAdd;
+            }
+        }
+        
+        const profit = losingTotal * (userBet.amount / winningTotal);
+        if (currentNetProfit + profit > 9) {
+            targetWinner = userBet.color === 'red' ? 'green' : 'red';
+        }
+      } else {
+        targetWinner = userBet.color === 'red' ? 'green' : 'red';
+      }
+    } else {
+      targetWinner = finalRedTotal >= finalGreenTotal ? 'red' : 'green';
+    }
+
+    if (targetWinner === 'red' && finalRedTotal <= finalGreenTotal) {
+      const diff = finalGreenTotal - finalRedTotal;
+      const amountToAdd = diff + Math.random() * 2 + 0.1;
+      const bot = generateBot();
+      finalRedPool.unshift({ id: Math.random().toString(), name: bot.name, color: '#ef4444', amount: Number(amountToAdd.toFixed(1)), isBot: true });
+      finalRedTotal += amountToAdd;
+    } else if (targetWinner === 'green' && finalGreenTotal <= finalRedTotal) {
+      const diff = finalRedTotal - finalGreenTotal;
+      const amountToAdd = diff + Math.random() * 2 + 0.1;
+      const bot = generateBot();
+      finalGreenPool.unshift({ id: Math.random().toString(), name: bot.name, color: '#22c55e', amount: Number(amountToAdd.toFixed(1)), isBot: true });
+      finalGreenTotal += amountToAdd;
+    }
+
+    setRedPool(finalRedPool);
+    setGreenPool(finalGreenPool);
+    setWinner(targetWinner);
+    setGameState('playing');
+    playSound('start');
+
+    setTimeout(() => {
+      endGame(targetWinner, finalRedTotal, finalGreenTotal);
+    }, 3000);
+  };
+
+  const endGame = (winningColor: 'red' | 'green', finalRedTotal: number, finalGreenTotal: number) => {
+    playSound('win');
+    setGameState('finished');
+    
+    setHistory(prev => {
+      const newHistory = [...prev, winningColor].slice(-10); // Keep last 10 rounds
+      localStorage.setItem('game2_history', JSON.stringify(newHistory));
+      return newHistory;
+    });
+
+    if (userBet) {
+      const userGamesPlayed = parseInt(localStorage.getItem('game2_games_played') || '0');
+      localStorage.setItem('game2_games_played', (userGamesPlayed + 1).toString());
+      
+      let currentNetProfit = parseFloat(localStorage.getItem('game2_net_profit') || '0');
+      
+      if (userBet.color === winningColor) {
+        const winningTotal = winningColor === 'red' ? finalRedTotal : finalGreenTotal;
+        const losingTotal = winningColor === 'red' ? finalGreenTotal : finalRedTotal;
+        const profit = losingTotal * (userBet.amount / winningTotal);
+        
+        currentNetProfit += profit;
+        setBalance(prev => prev + userBet.amount + profit);
+        
+        myConfetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      } else {
+        currentNetProfit -= userBet.amount;
+      }
+      localStorage.setItem('game2_net_profit', currentNetProfit.toString());
+    } else {
+      myConfetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    }
+
+    setTimeout(() => {
+      setGameState('waiting');
+      setTimeLeft(15);
+      setRedPool([]);
+      setGreenPool([]);
+      setUserBet(null);
+      setWinner(null);
+    }, 4000);
+  };
+
+  const handleBet = (color: 'red' | 'green', amount: number) => {
+    if (gameState !== 'waiting' || !walletConnected) return;
+    if (balance < amount) return;
+    
+    setBalance(prev => prev - amount);
+    setUserBet({ color, amount });
+  };
+
+  return (
+    <div className="p-2 sm:p-4 flex flex-col min-h-full max-w-md mx-auto w-full">
+      {/* Header & History Combined */}
+      <div className="flex justify-between items-end mb-3">
+        <div>
+          <h2 className="text-xl font-black text-white italic drop-shadow-lg leading-tight">Bears vs Bulls</h2>
+          <div className="flex items-center gap-1 mt-1">
+            {history.length === 0 ? (
+              <span className="text-[10px] text-white/30 font-medium">No history</span>
+            ) : (
+              history.map((color, i) => (
+                <div 
+                  key={i} 
+                  className={cn(
+                    "w-3 h-3 rounded-full flex-shrink-0 border border-[#1a1b26] shadow-sm", 
+                    color === 'red' ? "bg-red-500" : "bg-green-500",
+                    i === history.length - 1 ? "ring-1 ring-white/50 scale-110" : "opacity-80"
+                  )} 
+                />
+              ))
+            )}
+          </div>
+        </div>
+        <div className="bg-[#1a1b26] border border-white/10 rounded-lg px-3 py-1 flex flex-col items-center shadow-lg">
+          <span className="text-[9px] text-[var(--color-tg-muted)] font-bold uppercase tracking-wider mb-0.5">Time Left</span>
+          <span className={cn("text-xl font-black tabular-nums leading-none", timeLeft <= 3 ? "text-red-500 animate-pulse" : "text-white")}>
+            00:{timeLeft.toString().padStart(2, '0')}
+          </span>
+        </div>
+      </div>
+
+      {/* The Game Area - Changed from aspect-square to h-32/h-48 to save vertical space */}
+      <div className="w-full h-32 sm:h-48 rounded-2xl overflow-hidden flex relative shadow-2xl border-2 border-[#1a1b26] mb-3 bg-[#1a1b26] ring-2 ring-white/5">
+        <div 
+          className="h-full bg-gradient-to-br from-red-400 to-red-600 transition-all duration-500 ease-out flex items-center justify-center relative shadow-[inset_0_0_50px_rgba(0,0,0,0.3)]"
+          style={{ width: `${redPercentage}%` }}
+        >
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50" />
+          <motion.img 
+            src="https://i.suar.me/5Pm59/l" 
+            alt="Bear" 
+            className="absolute inset-0 m-auto opacity-20 w-24 h-24 sm:w-32 sm:h-32 object-contain pointer-events-none mix-blend-overlay"
+            animate={{ scale: Math.max(0.5, redPercentage / 50) }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          />
+          {redPercentage > 15 && (
+            <motion.span 
+              key={redPercentage}
+              initial={{ scale: 1.2 }}
+              animate={{ scale: 1 }}
+              className="text-white font-black text-3xl sm:text-4xl z-10 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] flex flex-col items-center"
+            >
+              {redPercentage.toFixed(0)}%
+            </motion.span>
+          )}
+        </div>
+        <div 
+          className="h-full bg-gradient-to-br from-green-400 to-green-600 transition-all duration-500 ease-out flex items-center justify-center relative shadow-[inset_0_0_50px_rgba(0,0,0,0.3)]"
+          style={{ width: `${greenPercentage}%` }}
+        >
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50" />
+          <motion.img 
+            src="https://i.suar.me/ngz9E/l" 
+            alt="Bull" 
+            className="absolute inset-0 m-auto opacity-20 w-24 h-24 sm:w-32 sm:h-32 object-contain pointer-events-none mix-blend-overlay"
+            animate={{ scale: Math.max(0.5, greenPercentage / 50) }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          />
+          {greenPercentage > 15 && (
+            <motion.span 
+              key={greenPercentage}
+              initial={{ scale: 1.2 }}
+              animate={{ scale: 1 }}
+              className="text-white font-black text-3xl sm:text-4xl z-10 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] flex flex-col items-center"
+            >
+              {greenPercentage.toFixed(0)}%
+            </motion.span>
+          )}
+        </div>
+        
+        {/* VS Badge & Total Pool */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10">
+          <div className="bg-[#1a1b26] text-white text-[10px] font-black px-3 py-1 rounded-full mb-1 border border-white/10 shadow-lg flex items-center gap-1">
+            <Globe className="w-3 h-3 text-indigo-400" />
+            {totalPool.toFixed(1)} TON
+          </div>
+          <div className="w-14 h-14 bg-[#1a1b26] rounded-full border-4 border-white/10 flex items-center justify-center shadow-2xl">
+            <span className="text-white font-black italic text-lg bg-clip-text text-transparent bg-gradient-to-br from-gray-100 to-gray-500">VS</span>
+          </div>
+        </div>
+
+        {/* Winner Overlay */}
+        <AnimatePresence>
+          {gameState === 'finished' && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 flex items-center justify-center z-20 bg-black/60 backdrop-blur-sm"
+            >
+              <div className={cn("p-8 rounded-3xl border-4 shadow-2xl text-center transform transition-transform", winner === 'red' ? "bg-red-500/20 border-red-500" : "bg-green-500/20 border-green-500")}>
+                <h3 className={cn("text-4xl font-black mb-2 drop-shadow-lg", winner === 'red' ? "text-red-400" : "text-green-400")}>
+                  {winner === 'red' ? 'RED WINS!' : 'GREEN WINS!'}
+                </h3>
+                {userBet && userBet.color === winner && (
+                  <p className="text-white font-bold text-xl">You Won!</p>
+                )}
+                {userBet && userBet.color !== winner && (
+                  <p className="text-white/70 font-bold text-xl">You Lost</p>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Betting Controls */}
+      <div className="bg-white/5 rounded-2xl p-4 border border-white/10 mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <span className="text-sm font-medium text-[var(--color-tg-muted)]">Bet Amount</span>
+          <div className="flex items-center gap-2 bg-black/40 px-3 py-2 rounded-xl border border-white/10 focus-within:border-indigo-500 transition-colors">
+            <input 
+              type="number" 
+              min="0.1" 
+              step="0.1" 
+              value={betInput} 
+              onChange={(e) => {
+                setBetInput(e.target.value);
+                localStorage.setItem('game2_bet_amount', e.target.value);
+              }}
+              className="bg-transparent text-white font-black text-right w-24 outline-none"
+              placeholder="0.1"
+            />
+            <TonIcon className="w-5 h-5" />
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-2 mb-4">
+          {[0.1, 1, 5, 10, 25].map(amt => (
+            <button
+              key={amt}
+              onClick={() => {
+                setBetInput(amt.toString());
+                localStorage.setItem('game2_bet_amount', amt.toString());
+              }}
+              className={cn(
+                "flex-1 min-w-[40px] py-2 rounded-lg font-bold text-sm transition-all",
+                parseFloat(betInput) === amt ? "bg-[var(--color-game-accent)] text-white" : "bg-white/10 text-white hover:bg-white/20"
+              )}
+            >
+              {amt}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-4">
+          <div className="flex-1 flex flex-col gap-2">
+            <button 
+              onClick={() => handleBet('red', buyAmount)} 
+              disabled={gameState !== 'waiting' || userBet !== null || !walletConnected}
+              className="w-full py-4 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-bold text-white shadow-lg shadow-red-500/20 transition-all active:scale-95 flex flex-col items-center justify-center gap-1"
+            >
+              <img src="https://i.suar.me/5Pm59/l" alt="Bear" className="w-6 h-6 object-contain" />
+              <span>Bet Bears</span>
+            </button>
+            <div className="text-center text-sm font-bold text-red-400">{redTotal.toFixed(1)} TON</div>
+          </div>
+          <div className="flex-1 flex flex-col gap-2">
+            <button 
+              onClick={() => handleBet('green', buyAmount)} 
+              disabled={gameState !== 'waiting' || userBet !== null || !walletConnected}
+              className="w-full py-4 bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-bold text-white shadow-lg shadow-green-500/20 transition-all active:scale-95 flex flex-col items-center justify-center gap-1"
+            >
+              <img src="https://i.suar.me/ngz9E/l" alt="Bull" className="w-6 h-6 object-contain" />
+              <span>Bet Bulls</span>
+            </button>
+            <div className="text-center text-sm font-bold text-green-400">{greenTotal.toFixed(1)} TON</div>
+          </div>
+        </div>
+        {!walletConnected && (
+          <p className="text-center text-xs text-red-400 mt-4 font-medium">Please connect your wallet to play</p>
+        )}
+      </div>
+
+      {/* Participants List */}
+      <div className="flex gap-2 sm:gap-4">
+        <div className="flex-1 min-w-0 bg-[#1a1b26] rounded-2xl p-2 sm:p-3 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.05)] flex flex-col h-64">
+          <div className="flex justify-between items-center mb-3 pb-2 border-b border-red-500/20">
+            <h4 className="text-red-400 font-black text-xs sm:text-sm flex items-center gap-1 sm:gap-2 truncate pr-1">
+              <img src="https://i.suar.me/5Pm59/l" alt="Bear" className="w-4 h-4 sm:w-5 sm:h-5 object-contain drop-shadow-md flex-shrink-0" />
+              <span className="truncate">BEARS</span>
+            </h4>
+            <span className="text-[10px] sm:text-xs font-bold text-red-500/50 flex-shrink-0">{redPool.length + (userBet?.color === 'red' ? 1 : 0)} <span className="hidden sm:inline">Players</span></span>
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+            {userBet?.color === 'red' && (
+              <div className="flex justify-between items-center p-2 bg-red-500/20 rounded-lg mb-2 border border-red-500/40 shadow-sm">
+                <span className="font-black text-xs text-white">{username}</span>
+                <span className="font-black text-xs text-red-300">{userBet.amount} TON</span>
+              </div>
+            )}
+            <AnimatePresence initial={false}>
+              {redPool.slice(0, 30).map(p => (
+                <motion.div 
+                  key={p.id} 
+                  initial={{ opacity: 0, x: -20, height: 0 }}
+                  animate={{ opacity: 1, x: 0, height: 'auto' }}
+                  className="flex justify-between items-center p-2 border-b border-red-500/10 last:border-0"
+                >
+                  <span className="font-medium text-xs text-white/70 truncate pr-2">{p.name}</span>
+                  <span className="font-bold text-xs text-red-400 whitespace-nowrap">{p.amount} TON</span>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        <div className="flex-1 min-w-0 bg-[#1a1b26] rounded-xl p-2 border border-green-500/20 shadow-[0_0_15px_rgba(34,197,94,0.05)] flex flex-col h-40 sm:h-48">
+          <div className="flex justify-between items-center mb-3 pb-2 border-b border-green-500/20">
+            <h4 className="text-green-400 font-black text-xs sm:text-sm flex items-center gap-1 sm:gap-2 truncate pr-1">
+              <img src="https://i.suar.me/ngz9E/l" alt="Bull" className="w-4 h-4 sm:w-5 sm:h-5 object-contain drop-shadow-md flex-shrink-0" />
+              <span className="truncate">BULLS</span>
+            </h4>
+            <span className="text-[10px] sm:text-xs font-bold text-green-500/50 flex-shrink-0">{greenPool.length + (userBet?.color === 'green' ? 1 : 0)} <span className="hidden sm:inline">Players</span></span>
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+            {userBet?.color === 'green' && (
+              <div className="flex justify-between items-center p-2 bg-green-500/20 rounded-lg mb-2 border border-green-500/40 shadow-sm">
+                <span className="font-black text-xs text-white">{username}</span>
+                <span className="font-black text-xs text-green-300">{userBet.amount} TON</span>
+              </div>
+            )}
+            <AnimatePresence initial={false}>
+              {greenPool.slice(0, 30).map(p => (
+                <motion.div 
+                  key={p.id} 
+                  initial={{ opacity: 0, x: 20, height: 0 }}
+                  animate={{ opacity: 1, x: 0, height: 'auto' }}
+                  className="flex justify-between items-center p-2 border-b border-green-500/10 last:border-0"
+                >
+                  <span className="font-medium text-xs text-white/70 truncate pr-2">{p.name}</span>
+                  <span className="font-bold text-xs text-green-400 whitespace-nowrap">{p.amount} TON</span>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance: React.Dispatch<React.SetStateAction<number>>, username: string, t: any }> = ({ walletConnected, balance, setBalance, username, t }) => {
   // Load initial state from localStorage if available
@@ -1114,7 +1597,7 @@ const GameTab: React.FC<{ walletConnected: boolean, balance: number, setBalance:
       </div>
 
       {/* The Square */}
-      <div className="relative w-full aspect-square bg-[#0f0f0f] rounded-3xl overflow-hidden cartoon-border shadow-2xl shadow-black/50">
+      <div className="relative w-full max-w-[280px] sm:max-w-[320px] mx-auto aspect-square bg-[#0f0f0f] rounded-full overflow-hidden cartoon-border shadow-2xl shadow-black/50 mb-4">
         {/* Slices using conic-gradient */}
         <div 
           className="absolute inset-0 transition-all duration-500"
@@ -1340,6 +1823,8 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
   const [shareCount, setShareCount] = useState(() => parseInt(localStorage.getItem('tq_share_count') || '0'));
   const [shareCooldownEnd, setShareCooldownEnd] = useState(() => parseInt(localStorage.getItem('tq_share_cooldown_end') || '0'));
   const [isSharing, setIsSharing] = useState(false);
+  const [verifyingShare, setVerifyingShare] = useState(false);
+  const [shareStartTime, setShareStartTime] = useState(0);
 
   // Ads Task State
   const [adsWatched, setAdsWatched] = useState(() => parseInt(localStorage.getItem('tq_ads_watched') || '0'));
@@ -1377,7 +1862,7 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
   }, [now, adsResetTime]);
 
   const handleShare = () => {
-    if (isSharing) return;
+    if (isSharing || verifyingShare) return;
     playSound('click');
     const refLink = `https://t.me/TonQashBot/app?startapp=${userId}`;
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent('Join me on TonQash and win TON!')}`;
@@ -1385,19 +1870,68 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
     // Open telegram share link
     window.open(shareUrl, '_blank');
 
-    setIsSharing(true);
-    setTimeout(() => {
-      setShareCount(prev => {
-        if (prev < 3) {
-          const newCount = prev + 1;
-          localStorage.setItem('tq_share_count', newCount.toString());
-          return newCount;
-        }
-        return prev;
-      });
-      setIsSharing(false);
-    }, 7000);
+    setVerifyingShare(true);
+    setShareStartTime(Date.now());
   };
+
+  // Verify share task
+  useEffect(() => {
+    const handleFocus = () => {
+      if (verifyingShare) {
+        const timeAway = Date.now() - shareStartTime;
+        // If user was away for more than 2.5 seconds, assume they actually shared it
+        if (timeAway > 2500) {
+          setShareCount(prev => {
+            if (prev < 3) {
+              const newCount = prev + 1;
+              localStorage.setItem('tq_share_count', newCount.toString());
+              return newCount;
+            }
+            return prev;
+          });
+        } else {
+          // User returned too quickly, likely didn't share
+          const tg = window.Telegram?.WebApp;
+          if (tg && tg.showAlert) {
+            tg.showAlert("You must actually share the link to get the reward!");
+          } else {
+            alert("You must actually share the link to get the reward!");
+          }
+        }
+        setVerifyingShare(false);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        handleFocus();
+      }
+    });
+
+    // Fallback timeout in case focus events don't fire reliably
+    let fallbackTimeout: NodeJS.Timeout;
+    if (verifyingShare) {
+      fallbackTimeout = setTimeout(() => {
+        if (verifyingShare) {
+          setVerifyingShare(false);
+          setShareCount(prev => {
+            if (prev < 3) {
+              const newCount = prev + 1;
+              localStorage.setItem('tq_share_count', newCount.toString());
+              return newCount;
+            }
+            return prev;
+          });
+        }
+      }, 10000);
+    }
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearTimeout(fallbackTimeout);
+    };
+  }, [verifyingShare, shareStartTime]);
 
   const handleClaimShare = () => {
     if (shareCount >= 3 && now >= shareCooldownEnd) {
@@ -1414,7 +1948,7 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
     if (now < adsNextTime || adsWatched >= 30) return;
     playSound('click');
     if ((window as any).Adsgram) {
-      const AdController = (window as any).Adsgram.init({ blockId: "int-27689" });
+      const AdController = (window as any).Adsgram.init({ blockId: "int-27598" });
       AdController.show().then(() => {
         const newWatched = adsWatched + 1;
         setAdsWatched(newWatched);
@@ -1573,8 +2107,8 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
             {t('comeBackLater').replace('{t}', formatTimeLeftShort(shareCooldownEnd))}
           </button>
         ) : shareCount < 3 ? (
-          <button onClick={handleShare} disabled={isSharing} className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 text-white font-bold py-3 rounded-xl cartoon-button text-stroke transition-colors">
-            {isSharing ? t('waitSec').replace('{s}', '7') : t('taskShareBtn')}
+          <button onClick={handleShare} disabled={isSharing || verifyingShare} className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 text-white font-bold py-3 rounded-xl cartoon-button text-stroke transition-colors">
+            {verifyingShare ? "Verifying..." : t('taskShareBtn')}
           </button>
         ) : (
           <button onClick={handleClaimShare} className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl cartoon-button text-stroke transition-colors animate-pulse-slow">
