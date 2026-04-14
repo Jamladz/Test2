@@ -1970,7 +1970,7 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
     if (now < adsNextTime || adsWatched >= 30) return;
     playSound('click');
     if ((window as any).Adsgram) {
-      const AdController = (window as any).Adsgram.init({ blockId: "int-27598" });
+      const AdController = (window as any).Adsgram.init({ blockId: "int-27689" });
       AdController.show().then(() => {
         const newWatched = adsWatched + 1;
         setAdsWatched(newWatched);
@@ -2016,7 +2016,7 @@ const TasksTab: React.FC<{ t: any, balance: number, setBalance: React.Dispatch<R
     if (now < premiumAdsNextTime || premiumAdsWatched >= 5 || now >= premiumSubEnd) return;
     playSound('click');
     if ((window as any).Adsgram) {
-      const AdController = (window as any).Adsgram.init({ blockId: "int-27598" });
+      const AdController = (window as any).Adsgram.init({ blockId: "int-27689" });
       AdController.show().then(() => {
         const newWatched = premiumAdsWatched + 1;
         setPremiumAdsWatched(newWatched);
